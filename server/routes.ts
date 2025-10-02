@@ -13,6 +13,7 @@ import { OTPService } from "./services/otpService";
 import { QRService } from "./services/qrService";
 import { NotificationService } from "./services/notificationService";
 import { mpesaService } from "./services/mpesaService";
+import { websocketService } from "./services/websocketService";
 import { 
   insertUserSchema, 
   loginSchema, 
@@ -322,6 +323,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         delivery.trackingNumber, 
         box.boxId
       );
+      
+      websocketService.sendToUser(recipient.id, {
+        type: "delivery_assigned",
+        data: delivery
+      });
+      
+      websocketService.sendToUser(req.user!.id, {
+        type: "delivery_created",
+        data: delivery
+      });
 
       res.status(201).json({
         message: "Delivery assigned successfully",
@@ -365,6 +376,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
         }
       }
+      
+      websocketService.sendToUser(delivery.recipientId, {
+        type: "delivery_status_updated",
+        data: updatedDelivery
+      });
+      
+      if (delivery.courierId) {
+        websocketService.sendToUser(delivery.courierId, {
+          type: "delivery_status_updated",
+          data: updatedDelivery
+        });
+      }
+      
+      websocketService.broadcastToRole("admin", {
+        type: "delivery_status_updated",
+        data: updatedDelivery
+      });
 
       res.json({
         message: "Delivery status updated successfully",
@@ -698,5 +726,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  websocketService.initialize(httpServer);
+  
   return httpServer;
 }

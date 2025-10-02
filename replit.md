@@ -219,9 +219,48 @@ Preferred communication style: Simple, everyday language.
 5. System updates payment status and notifies user
 6. Payment history stored in database
 
+## WebSocket Real-Time Notifications
+
+**Implementation:**
+- WebSocket server running on `/ws` endpoint
+- Token-based authentication for WebSocket connections
+- Real-time broadcasts for delivery updates, notifications, and system events
+- User-specific and role-based message targeting
+
+**Connection:**
+- WebSocket URL: `ws://[host]:[port]/ws?token=[JWT_TOKEN]`
+- Authenticated connection using JWT token from login
+- Automatic reconnection on disconnect
+- Connection confirmation message sent on successful authentication
+
+**Real-Time Events:**
+- `notification` - New notification for user
+- `delivery_assigned` - Package assigned to user's box
+- `delivery_created` - Delivery created (for courier)
+- `delivery_status_updated` - Delivery status changed (sent to recipient, courier, and admins)
+- `connection` - Initial connection confirmation
+
+**Event Message Format:**
+```json
+{
+  "type": "event_type",
+  "data": { /* event-specific data */ }
+}
+```
+
+**Broadcasting Methods:**
+- `sendToUser(userId, message)` - Send to specific user
+- `broadcastToRole(role, message)` - Send to all users with specific role (admin, courier, resident)
+- `broadcast(message)` - Send to all connected users
+
+**Features:**
+- Multiple simultaneous connections per user supported
+- Automatic cleanup on disconnect
+- Connection tracking by user and role
+- Real-time delivery status propagation across dashboards
+
 ## Future Integration Points
 - USSD gateway for feature phone support
-- Real-time WebSocket for live delivery updates
-- Payment processing for delivery fees (M-Pesa integration planned)
 - External courier API integrations
 - Delivery route optimization with mapping
+- Advanced analytics and reporting dashboard

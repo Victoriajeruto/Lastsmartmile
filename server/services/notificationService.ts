@@ -1,11 +1,17 @@
 import { storage } from "../storage";
 import { smsService } from "./smsService";
+import { websocketService } from "./websocketService";
 import { type InsertNotification } from "@shared/schema";
 
 export class NotificationService {
   static async createNotification(notification: InsertNotification): Promise<void> {
     try {
-      await storage.createNotification(notification);
+      const createdNotification = await storage.createNotification(notification);
+      
+      websocketService.sendToUser(notification.userId, {
+        type: "notification",
+        data: createdNotification
+      });
       
       console.log(`📱 NOTIFICATION - User: ${notification.userId}`);
       console.log(`   Title: ${notification.title}`);
