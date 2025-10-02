@@ -2,38 +2,41 @@ import { useAuth } from "@/hooks/useAuth";
 import { Package, Home, Bell, Unlock, History, Settings, Truck, PackageOpen, MapPin, Clock, BarChart, Users, AlertTriangle, Cog } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { PageType } from "./Layout";
 
 interface SidebarProps {
   currentView: "resident" | "courier" | "admin";
   onViewChange: (view: "resident" | "courier" | "admin") => void;
+  currentPage: PageType;
+  onPageChange: (page: PageType) => void;
 }
 
-export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
+export default function Sidebar({ currentView, onViewChange, currentPage, onPageChange }: SidebarProps) {
   const { user, logout } = useAuth();
 
   const residentNavItems = [
-    { icon: Home, label: "Dashboard", href: "#", active: true },
-    { icon: Bell, label: "Notifications", href: "#", badge: "3" },
-    { icon: Unlock, label: "Unlock Box", href: "#" },
-    { icon: History, label: "Delivery History", href: "#" },
-    { icon: Settings, label: "Settings", href: "#" },
+    { icon: Home, label: "Dashboard", page: "dashboard" as PageType },
+    { icon: Bell, label: "Notifications", page: "notifications" as PageType, badge: "3" },
+    { icon: Unlock, label: "Unlock Box", action: "unlock" },
+    { icon: History, label: "Delivery History", page: "delivery-history" as PageType },
+    { icon: Settings, label: "Settings", page: "settings" as PageType },
   ];
 
   const courierNavItems = [
-    { icon: Home, label: "Dashboard", href: "#", active: true },
-    { icon: Truck, label: "Active Deliveries", href: "#", badge: "5" },
-    { icon: PackageOpen, label: "Assign Delivery", href: "#" },
-    { icon: MapPin, label: "Box Locations", href: "#" },
-    { icon: Clock, label: "Delivery History", href: "#" },
+    { icon: Home, label: "Dashboard", page: "active-deliveries" as PageType },
+    { icon: Truck, label: "Active Deliveries", page: "active-deliveries" as PageType, badge: "5" },
+    { icon: PackageOpen, label: "Assign Delivery", page: "assign-delivery" as PageType },
+    { icon: MapPin, label: "Box Locations", page: "box-locations" as PageType },
+    { icon: Clock, label: "Delivery History", page: "courier-delivery-history" as PageType },
   ];
 
   const adminNavItems = [
-    { icon: BarChart, label: "Analytics", href: "#", active: true },
-    { icon: Package, label: "Box Management", href: "#" },
-    { icon: Users, label: "User Management", href: "#" },
-    { icon: Truck, label: "Delivery Tracking", href: "#" },
-    { icon: AlertTriangle, label: "Alerts & Issues", href: "#", badge: "2" },
-    { icon: Cog, label: "System Settings", href: "#" },
+    { icon: BarChart, label: "Analytics", page: "analytics" as PageType },
+    { icon: Package, label: "Box Management", page: "box-management" as PageType },
+    { icon: Users, label: "User Management", page: "user-management" as PageType },
+    { icon: Truck, label: "Delivery Tracking", page: "delivery-tracking" as PageType },
+    { icon: AlertTriangle, label: "Alerts & Issues", page: "alerts-issues" as PageType, badge: "2" },
+    { icon: Cog, label: "System Settings", page: "system-settings" as PageType },
   ];
 
   const getNavItems = () => {
@@ -52,9 +55,26 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
     return `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
   };
 
+  const handleNavClick = (item: any) => {
+    if (item.action === "unlock") {
+      // Trigger unlock modal through TopBar
+      const event = new CustomEvent("open-unlock-modal");
+      window.dispatchEvent(event);
+    } else if (item.page) {
+      onPageChange(item.page);
+    }
+  };
+
+  const isActive = (item: any) => {
+    if (item.page) {
+      return currentPage === item.page;
+    }
+    return false;
+  };
+
   return (
     <aside className="w-64 bg-card border-r border-border flex-shrink-0" data-testid="sidebar">
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-column">
         {/* Logo/Brand */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
@@ -89,8 +109,9 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
             {getNavItems().map((item, index) => (
               <button
                 key={index}
+                onClick={() => handleNavClick(item)}
                 className={`nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                  item.active
+                  isActive(item)
                     ? "bg-primary/10 text-primary font-medium"
                     : "hover:bg-muted text-foreground"
                 }`}
