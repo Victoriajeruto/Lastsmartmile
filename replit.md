@@ -181,6 +181,44 @@ Preferred communication style: Simple, everyday language.
 - Low battery alerts (below 20%)
 - Tamper detection alerts
 
+## M-Pesa Payment Integration (Safaricom Daraja API)
+
+**Implementation:**
+- Integrated M-Pesa STK Push (Lipa Na M-Pesa Online) for subscription payments
+- Automatic fallback to mock mode if API credentials not configured
+- Payment verification via callback URL and status query endpoints
+- Payment history tracking in database with transaction details
+
+**Configuration (Environment Variables):**
+- `MPESA_CONSUMER_KEY` - Consumer Key from Daraja API Portal
+- `MPESA_CONSUMER_SECRET` - Consumer Secret from Daraja API Portal
+- `MPESA_BUSINESS_SHORT_CODE` - Business shortcode (default: "174379" for sandbox)
+- `MPESA_PASS_KEY` - Lipa Na M-Pesa Passkey
+- `MPESA_CALLBACK_URL` - Public HTTPS URL for payment callbacks (e.g., https://yourdomain.com/api/payments/callback)
+- `MPESA_ENVIRONMENT` - "sandbox" or "production" (default: "sandbox")
+
+**Payment Features:**
+- STK Push payment initiation (sends prompt to user's phone)
+- Real-time payment callback processing
+- Payment status tracking and query
+- Payment history for each user
+- In-app notifications for payment success/failure
+- Support for multiple payment types: subscription, delivery fees, top-ups
+
+**API Endpoints:**
+- `POST /api/payments/initiate` - Initiate STK Push payment (authenticated)
+- `POST /api/payments/callback` - M-Pesa callback handler (public, no auth)
+- `GET /api/payments/history` - Get user's payment history (authenticated)
+- `GET /api/payments/:id/status` - Check payment status (authenticated)
+
+**Payment Flow:**
+1. User initiates payment via API
+2. M-Pesa sends STK Push prompt to user's phone
+3. User enters M-Pesa PIN to authorize payment
+4. M-Pesa sends callback to server with payment result
+5. System updates payment status and notifies user
+6. Payment history stored in database
+
 ## Future Integration Points
 - USSD gateway for feature phone support
 - Real-time WebSocket for live delivery updates

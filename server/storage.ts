@@ -1,8 +1,8 @@
 import { 
-  users, boxes, deliveries, unlockCodes, notifications,
+  users, boxes, deliveries, unlockCodes, notifications, payments,
   type User, type InsertUser, type Box, type InsertBox, 
   type Delivery, type InsertDelivery, type UnlockCode, type InsertUnlockCode,
-  type Notification, type InsertNotification
+  type Notification, type InsertNotification, type Payment, type InsertPayment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -48,6 +48,13 @@ export interface IStorage {
   getUserCount(): Promise<number>;
   getAllUsers(): Promise<User[]>;
   getCourierPerformance(courierId: string): Promise<{ totalDeliveries: number; completedDeliveries: number; rating: number }>;
+  
+  // Payment methods
+  getPayment(id: string): Promise<Payment | undefined>;
+  getPaymentByCheckoutRequestId(checkoutRequestId: string): Promise<Payment | undefined>;
+  getPaymentsByUserId(userId: string): Promise<Payment[]>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  updatePayment(id: string, updates: Partial<InsertPayment>): Promise<Payment | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -252,6 +259,41 @@ export class DatabaseStorage implements IStorage {
       completedDeliveries,
       rating: Math.round(rating * 10) / 10
     };
+  }
+  
+  // Payment methods
+  async getPayment(id: string): Promise<Payment | undefined> {
+    const [payment] = await db.select().from(payments).where(eq(payments.id, id));
+    return payment || undefined;
+  }
+  
+  async getPaymentByCheckoutRequestId(checkoutRequestId: string): Promise<Payment | undefined> {
+    const [payment] = await db.select().from(payments)
+      .where(eq(payments.checkoutRequestId, checkoutRequestId));
+    return payment || undefined;
+  }
+  
+  async getPaymentsByUserId(userId: string): Promise<Payment[]> {
+    return await db.select().from(payments)
+      .where(eq(payments.userId, userId))
+      .orderBy(desc(payments.createdAt));
+  }
+  
+  async createPayment(insertPayment: InsertPayment): Promise<Payment> {
+    const [payment] = await db
+      .insert(payments)
+      .values(insertPayment)
+      .returning();
+    return payment;
+  }
+  
+  async updatePayment(id: string, updates: Partial<InsertPayment>): Promise<Payment | undefined> {
+    const [payment] = await db
+      .update(payments)
+      .set(updates)
+      .where(eq(payments.id, id))
+      .returning();
+    return payment || undefined;
   }
 }
 

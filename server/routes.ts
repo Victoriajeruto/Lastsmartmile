@@ -12,6 +12,7 @@ import {
 import { OTPService } from "./services/otpService";
 import { QRService } from "./services/qrService";
 import { NotificationService } from "./services/notificationService";
+import { mpesaService } from "./services/mpesaService";
 import { 
   insertUserSchema, 
   loginSchema, 
@@ -509,6 +510,190 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(performance);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to get performance metrics" });
+    }
+  });
+
+  // Payment routes
+  app.post("/api/payments/initiate", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { amount, paymentType, description } = req.body;
+      
+      if (!amount || amount < 1) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+      
+      const user = req.user!;
+      
+      const payment = await storage.createPayment({
+        userId: user.id,
+        amount,
+        phone: user.phone,
+        paymentType: paymentType || "subscription",
+        status: "pending",
+        accountReference: `POBox-${user.id.substring(0, 8)}`,
+        description: description || `Payment for Smart P.O Box - ${paymentType || "subscription"}`,
+      });
+      
+      try {
+        const stkResponse = await mpesaService.initiateSTKPush({
+          phone: user.phone,
+          amount,
+          accountReference: payment.accountReference!,
+          transactionDesc: payment.description!,
+        });
+        
+        await storage.updatePayment(payment.id, {
+          checkoutRequestId: stkResponse.CheckoutRequestID,
+          merchantRequestId: stkResponse.MerchantRequestID,
+        });
+        
+        res.json({
+          message: "Payment initiated. Please check your phone to complete the payment.",
+          payment: {
+            id: payment.id,
+            amount,
+            checkoutRequestId: stkResponse.CheckoutRequestID,
+            customerMessage: stkResponse.CustomerMessage,
+          }
+        });
+      } catch (stkError: any) {
+        await storage.updatePayment(payment.id, { status: "failed" });
+        
+        await NotificationService.createNotification({
+          userId: user.id,
+          title: "Payment Initiation Failed",
+          message: "We couldn't process your payment request. Please try again.",
+          type: "payment_failed"
+        });
+        
+        throw stkError;
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to initiate payment" });
+    }
+  });
+  
+  app.post("/api/payments/callback", async (req, res) => {
+    try {
+      console.log("📱 M-Pesa Callback Received:", JSON.stringify(req.body, null, 2));
+      
+      const { Body } = req.body;
+      
+      if (!Body?.stkCallback) {
+        return res.status(400).json({ message: "Invalid callback data" });
+      }
+      
+      const {
+        MerchantRequestID,
+        CheckoutRequestID,
+        ResultCode,
+        ResultDesc,
+        CallbackMetadata,
+      } = Body.stkCallback;
+      
+      const payment = await storage.getPaymentByCheckoutRequestId(CheckoutRequestID);
+      
+      if (!payment) {
+        console.log(`⚠️  Payment not found for CheckoutRequestID: ${CheckoutRequestID}`);
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      
+      if (ResultCode === 0) {
+        const metadata = CallbackMetadata.Item;
+        const amount = metadata.find((item: any) => item.Name === "Amount")?.Value;
+        const mpesaReceiptNumber = metadata.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;
+        const transactionDateRaw = metadata.find((item: any) => item.Name === "TransactionDate")?.Value;
+        
+        let transactionDate = new Date();
+        if (transactionDateRaw) {
+          const dateStr = String(transactionDateRaw);
+          if (dateStr.length === 14) {
+            const year = dateStr.substring(0, 4);
+            const month = dateStr.substring(4, 6);
+            const day = dateStr.substring(6, 8);
+            const hour = dateStr.substring(8, 10);
+            const minute = dateStr.substring(10, 12);
+            const second = dateStr.substring(12, 14);
+            transactionDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+          }
+        }
+        
+        await storage.updatePayment(payment.id, {
+          status: "completed",
+          mpesaReceiptNumber,
+          transactionDate,
+        });
+        
+        await NotificationService.createNotification({
+          userId: payment.userId,
+          title: "Payment Successful",
+          message: `Your payment of KES ${amount} has been received. Receipt: ${mpesaReceiptNumber}`,
+          type: "payment_success"
+        });
+        
+        console.log(`✅ Payment completed - Receipt: ${mpesaReceiptNumber}, Amount: KES ${amount}`);
+      } else {
+        await storage.updatePayment(payment.id, {
+          status: "failed",
+        });
+        
+        await NotificationService.createNotification({
+          userId: payment.userId,
+          title: "Payment Failed",
+          message: `Your payment failed. Reason: ${ResultDesc}. Please try again.`,
+          type: "payment_failed"
+        });
+        
+        console.log(`❌ Payment failed - ${ResultDesc}`);
+      }
+      
+      res.status(200).json({ message: "Callback processed" });
+    } catch (error: any) {
+      console.error("Error processing M-Pesa callback:", error);
+      res.status(500).json({ message: error.message || "Failed to process callback" });
+    }
+  });
+  
+  app.get("/api/payments/history", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const payments = await storage.getPaymentsByUserId(req.user!.id);
+      res.json({ payments });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch payment history" });
+    }
+  });
+  
+  app.get("/api/payments/:id/status", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const payment = await storage.getPayment(id);
+      
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      
+      if (payment.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      if (payment.status === "pending" && payment.checkoutRequestId) {
+        try {
+          const status = await mpesaService.queryTransactionStatus(payment.checkoutRequestId);
+          
+          if (status.ResultCode === "0") {
+            await storage.updatePayment(payment.id, { status: "completed" });
+          } else if (status.ResultCode !== undefined) {
+            await storage.updatePayment(payment.id, { status: "failed" });
+          }
+        } catch (error) {
+          console.error("Failed to query M-Pesa status:", error);
+        }
+      }
+      
+      const updatedPayment = await storage.getPayment(id);
+      res.json({ payment: updatedPayment });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to check payment status" });
     }
   });
 

@@ -6,6 +6,8 @@ import { z } from "zod";
 export const userRoleEnum = pgEnum("user_role", ["resident", "courier", "admin"]);
 export const boxStatusEnum = pgEnum("box_status", ["operational", "maintenance", "offline"]);
 export const deliveryStatusEnum = pgEnum("delivery_status", ["pending", "assigned", "in_transit", "delivered", "failed"]);
+export const paymentStatusEnum = pgEnum("payment_status", ["pending", "completed", "failed", "refunded"]);
+export const paymentTypeEnum = pgEnum("payment_type", ["subscription", "delivery_fee", "top_up"]);
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -71,6 +73,23 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  amount: integer("amount").notNull(),
+  phone: text("phone").notNull(),
+  paymentType: paymentTypeEnum("payment_type").notNull().default("subscription"),
+  status: paymentStatusEnum("status").notNull().default("pending"),
+  checkoutRequestId: text("checkout_request_id"),
+  merchantRequestId: text("merchant_request_id"),
+  mpesaReceiptNumber: text("mpesa_receipt_number"),
+  transactionDate: timestamp("transaction_date"),
+  accountReference: text("account_reference"),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   ownedBoxes: many(boxes),
@@ -78,6 +97,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   courierDeliveries: many(deliveries, { relationName: "courierDeliveries" }),
   unlockCodes: many(unlockCodes),
   notifications: many(notifications),
+  payments: many(payments),
 }));
 
 export const boxesRelations = relations(boxes, ({ one, many }) => ({
@@ -124,6 +144,13 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  user: one(users, {
+    fields: [payments.userId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -156,6 +183,12 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Login schema
 export const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -173,4 +206,6 @@ export type UnlockCode = typeof unlockCodes.$inferSelect;
 export type InsertUnlockCode = z.infer<typeof insertUnlockCodeSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
