@@ -1,8 +1,9 @@
 import { 
-  users, boxes, deliveries, unlockCodes, notifications, payments,
+  users, boxes, deliveries, unlockCodes, notifications, payments, tamperEvents,
   type User, type InsertUser, type Box, type InsertBox, 
   type Delivery, type InsertDelivery, type UnlockCode, type InsertUnlockCode,
-  type Notification, type InsertNotification, type Payment, type InsertPayment
+  type Notification, type InsertNotification, type Payment, type InsertPayment,
+  type TamperEvent, type InsertTamperEvent
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -55,6 +56,14 @@ export interface IStorage {
   getPaymentsByUserId(userId: string): Promise<Payment[]>;
   createPayment(payment: InsertPayment): Promise<Payment>;
   updatePayment(id: string, updates: Partial<InsertPayment>): Promise<Payment | undefined>;
+  
+  // Tamper event methods
+  getTamperEvent(id: string): Promise<TamperEvent | undefined>;
+  getTamperEventsByBoxId(boxId: string): Promise<TamperEvent[]>;
+  getAllTamperEvents(): Promise<TamperEvent[]>;
+  getUnresolvedTamperEvents(): Promise<TamperEvent[]>;
+  createTamperEvent(tamperEvent: InsertTamperEvent): Promise<TamperEvent>;
+  resolveTamperEvent(id: string, notes?: string): Promise<TamperEvent | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -294,6 +303,50 @@ export class DatabaseStorage implements IStorage {
       .where(eq(payments.id, id))
       .returning();
     return payment || undefined;
+  }
+  
+  // Tamper event methods
+  async getTamperEvent(id: string): Promise<TamperEvent | undefined> {
+    const [event] = await db.select().from(tamperEvents).where(eq(tamperEvents.id, id));
+    return event || undefined;
+  }
+  
+  async getTamperEventsByBoxId(boxId: string): Promise<TamperEvent[]> {
+    return await db.select().from(tamperEvents)
+      .where(eq(tamperEvents.boxId, boxId))
+      .orderBy(desc(tamperEvents.detectedAt));
+  }
+  
+  async getAllTamperEvents(): Promise<TamperEvent[]> {
+    return await db.select().from(tamperEvents)
+      .orderBy(desc(tamperEvents.detectedAt));
+  }
+  
+  async getUnresolvedTamperEvents(): Promise<TamperEvent[]> {
+    return await db.select().from(tamperEvents)
+      .where(eq(tamperEvents.resolved, false))
+      .orderBy(desc(tamperEvents.detectedAt));
+  }
+  
+  async createTamperEvent(insertTamperEvent: InsertTamperEvent): Promise<TamperEvent> {
+    const [event] = await db
+      .insert(tamperEvents)
+      .values(insertTamperEvent)
+      .returning();
+    return event;
+  }
+  
+  async resolveTamperEvent(id: string, notes?: string): Promise<TamperEvent | undefined> {
+    const [event] = await db
+      .update(tamperEvents)
+      .set({ 
+        resolved: true, 
+        resolvedAt: new Date() as any,
+        notes: notes || null 
+      })
+      .where(eq(tamperEvents.id, id))
+      .returning();
+    return event || undefined;
   }
 }
 

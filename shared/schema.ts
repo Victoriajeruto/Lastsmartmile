@@ -90,6 +90,15 @@ export const payments = pgTable("payments", {
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const tamperEvents = pgTable("tamper_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  boxId: varchar("box_id").notNull().references(() => boxes.id),
+  detectedAt: timestamp("detected_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  resolved: boolean("resolved").notNull().default(false),
+  resolvedAt: timestamp("resolved_at"),
+  notes: text("notes"),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   ownedBoxes: many(boxes),
@@ -107,6 +116,7 @@ export const boxesRelations = relations(boxes, ({ one, many }) => ({
   }),
   deliveries: many(deliveries),
   unlockCodes: many(unlockCodes),
+  tamperEvents: many(tamperEvents),
 }));
 
 export const deliveriesRelations = relations(deliveries, ({ one }) => ({
@@ -151,6 +161,13 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   }),
 }));
 
+export const tamperEventsRelations = relations(tamperEvents, ({ one }) => ({
+  box: one(boxes, {
+    fields: [tamperEvents.boxId],
+    references: [boxes.id],
+  }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -189,6 +206,11 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
   updatedAt: true,
 });
 
+export const insertTamperEventSchema = createInsertSchema(tamperEvents).omit({
+  id: true,
+  detectedAt: true,
+});
+
 // Login schema
 export const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -208,4 +230,6 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type TamperEvent = typeof tamperEvents.$inferSelect;
+export type InsertTamperEvent = z.infer<typeof insertTamperEventSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;

@@ -490,19 +490,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (status !== undefined) updateData.status = status;
 
       await storage.updateBox(box.id, updateData);
+      
+      const updatedStatus = status !== undefined ? status : box.status;
 
       // Handle low battery alert
-      if (batteryLevel && batteryLevel < 20 && box.ownerId) {
+      if (batteryLevel !== undefined && batteryLevel !== null && batteryLevel < 20 && box.ownerId) {
         await NotificationService.notifyLowBattery(box.ownerId, boxId, batteryLevel);
+        
+        websocketService.sendToUser(box.ownerId, {
+          type: "battery_alert",
+          data: {
+            boxId,
+            batteryLevel,
+            status: updatedStatus,
+            message: `Low battery alert: ${batteryLevel}%`
+          }
+        });
+        
+        websocketService.broadcastToRole("admin", {
+          type: "battery_alert",
+          data: {
+            boxId,
+            ownerId: box.ownerId,
+            batteryLevel,
+            status: updatedStatus
+          }
+        });
       }
 
       // Handle tamper alert
       if (tamperAlert && box.ownerId) {
-        await NotificationService.createNotification({
-          userId: box.ownerId,
-          title: "Security Alert",
-          message: `Tampering detected on box ${boxId}. Please check your box immediately.`,
-          type: "security_alert"
+        const tamperEvent = await storage.createTamperEvent({
+          boxId: box.id,
+          resolved: false
+        });
+        
+        await NotificationService.notifyTamperDetected(box.ownerId, boxId);
+        
+        websocketService.sendToUser(box.ownerId, {
+          type: "tamper_alert",
+          data: {
+            boxId,
+            eventId: tamperEvent.id,
+            timestamp: new Date(),
+            message: "Tampering detected on your box"
+          }
+        });
+        
+        websocketService.broadcastToRole("admin", {
+          type: "tamper_alert",
+          data: {
+            boxId,
+            ownerId: box.ownerId,
+            eventId: tamperEvent.id,
+            timestamp: new Date(),
+            status: updatedStatus
+          }
         });
       }
 
@@ -538,6 +581,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(performance);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to get performance metrics" });
+    }
+  });
+  
+  app.get("/api/analytics/boxes/tamper", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const allEvents = await storage.getAllTamperEvents();
+      const unresolvedEvents = await storage.getUnresolvedTamperEvents();
+      
+      const tamperStats = {
+        total: allEvents.length,
+        unresolved: unresolvedEvents.length,
+        resolved: allEvents.filter(e => e.resolved).length,
+        last24Hours: allEvents.filter(e => {
+          const hoursDiff = (Date.now() - new Date(e.detectedAt).getTime()) / (1000 * 60 * 60);
+          return hoursDiff <= 24;
+        }).length,
+        last7Days: allEvents.filter(e => {
+          const daysDiff = (Date.now() - new Date(e.detectedAt).getTime()) / (1000 * 60 * 60 * 24);
+          return daysDiff <= 7;
+        }).length,
+        unresolvedEvents: await Promise.all(
+          unresolvedEvents.map(async (event) => {
+            const box = await storage.getBox(event.boxId);
+            return {
+              id: event.id,
+              boxId: box?.boxId,
+              location: box?.location,
+              detectedAt: event.detectedAt,
+              ownerID: box?.ownerId
+            };
+          })
+        )
+      };
+      
+      res.json(tamperStats);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get tamper statistics" });
+    }
+  });
+  
+  app.get("/api/analytics/boxes/battery", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const boxes = await storage.getAllBoxes();
+      const boxesWithBattery = boxes.filter(b => b.batteryLevel !== null && b.batteryLevel !== undefined);
+      const boxesWithoutBattery = boxes.filter(b => b.batteryLevel === null || b.batteryLevel === undefined);
+      
+      const batteryStats = {
+        total: boxes.length,
+        monitored: boxesWithBattery.length,
+        unknown: boxesWithoutBattery.length,
+        critical: boxesWithBattery.filter(b => b.batteryLevel! < 10).length,
+        low: boxesWithBattery.filter(b => b.batteryLevel! >= 10 && b.batteryLevel! < 20).length,
+        medium: boxesWithBattery.filter(b => b.batteryLevel! >= 20 && b.batteryLevel! < 50).length,
+        good: boxesWithBattery.filter(b => b.batteryLevel! >= 50).length,
+        averageBatteryLevel: boxesWithBattery.length > 0 
+          ? boxesWithBattery.reduce((sum, b) => sum + b.batteryLevel!, 0) / boxesWithBattery.length 
+          : 0,
+        lowBatteryBoxes: boxesWithBattery
+          .filter(b => b.batteryLevel! < 20)
+          .map(b => ({
+            boxId: b.boxId,
+            location: b.location,
+            batteryLevel: b.batteryLevel,
+            status: b.status,
+            lastActivity: b.lastActivity
+          }))
+          .sort((a, b) => (a.batteryLevel || 0) - (b.batteryLevel || 0))
+      };
+      
+      res.json(batteryStats);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get battery statistics" });
     }
   });
 

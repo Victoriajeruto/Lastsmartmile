@@ -75,6 +75,20 @@ export class NotificationService {
     }
   }
   
+  static async notifyTamperDetected(userId: string, boxId: string): Promise<void> {
+    await this.createNotification({
+      userId,
+      title: "Security Alert - Tamper Detected",
+      message: `Tampering detected on your Smart P.O Box ${boxId}. Please check your box immediately and contact support if needed.`,
+      type: "security_alert"
+    });
+    
+    const user = await storage.getUser(userId);
+    if (user?.phone) {
+      await smsService.sendTamperAlert(user.phone, boxId);
+    }
+  }
+  
   static async sendUnlockCodeSMS(userId: string, code: string, boxId: string): Promise<void> {
     const user = await storage.getUser(userId);
     if (user?.phone) {

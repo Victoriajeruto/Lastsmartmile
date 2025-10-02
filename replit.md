@@ -238,6 +238,8 @@ Preferred communication style: Simple, everyday language.
 - `delivery_assigned` - Package assigned to user's box
 - `delivery_created` - Delivery created (for courier)
 - `delivery_status_updated` - Delivery status changed (sent to recipient, courier, and admins)
+- `battery_alert` - Low battery detected (sent to box owner and all admins)
+- `tamper_alert` - Tamper detection triggered (sent to box owner and all admins)
 - `connection` - Initial connection confirmation
 
 **Event Message Format:**
@@ -259,8 +261,47 @@ Preferred communication style: Simple, everyday language.
 - Connection tracking by user and role
 - Real-time delivery status propagation across dashboards
 
+## Enhanced Box Monitoring
+
+**Battery Monitoring:**
+- Real-time battery level tracking for all boxes
+- Low battery alerts (< 20%) with SMS and WebSocket notifications
+- Critical battery alerts (< 10%) for urgent attention
+- Battery analytics dashboard with categorized status (critical/low/medium/good)
+- Average battery level across all boxes
+- Sorted list of low-battery boxes for maintenance prioritization
+
+**Tamper Detection:**
+- Real-time tamper detection alerts from IoT devices
+- Instant SMS notifications to box owners
+- WebSocket broadcasts to owners and admin dashboards
+- Security event logging and tracking
+- Immediate response capability
+
+**Analytics Endpoints:**
+- `GET /api/analytics/boxes/battery` - Comprehensive battery statistics (admin only)
+  - Total boxes count
+  - Monitored vs unknown battery status
+  - Distribution by battery level (critical/low/medium/good)
+  - Average battery level (only from boxes with known levels)
+  - Prioritized list of boxes requiring maintenance
+  
+- `GET /api/analytics/boxes/tamper` - Tamper event analytics (admin only)
+  - Total tamper events logged
+  - Unresolved vs resolved events count
+  - Events in last 24 hours
+  - Events in last 7 days
+  - List of unresolved tamper events with box details
+
+**Alert Channels:**
+- In-app notifications
+- SMS alerts (via Africa's Talking)
+- Real-time WebSocket broadcasts
+- Admin dashboard notifications for all critical events
+
 ## Future Integration Points
 - USSD gateway for feature phone support
 - External courier API integrations
 - Delivery route optimization with mapping
-- Advanced analytics and reporting dashboard
+- Predictive battery maintenance scheduling
+- Advanced tamper event analytics and forensics
