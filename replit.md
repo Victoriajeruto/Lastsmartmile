@@ -22,7 +22,7 @@ Preferred communication style: Simple, everyday language.
 - **Core Tables:** `users` (with enhanced resident profile and payment tracking), `boxes`, `deliveries`, `payments` (Paystack integration), `unlock_codes`, `notifications`.
 - **Relationships:** Boxes link to users, deliveries link boxes, couriers, recipients; payments link to users; unlock codes to boxes; notifications to users.
 - **Status Enums:** User roles, box status (operational, maintenance, offline), delivery status (pending, assigned, in_transit, delivered, failed), payment status (pending, completed, failed).
-- **User Registration:** Includes `county`, `constituency`, `apartmentName`, `latitude`, `longitude` for residents.
+- **User Registration:** Includes `county`, `constituency`, `apartmentName`, `latitude`, `longitude` for residents. Location is selected via interactive map with ~1-10 meter accuracy.
 
 ## Service Layer Architecture
 - **OTPService:** Generates and validates 6-digit OTPs with expiration.
@@ -34,9 +34,10 @@ Preferred communication style: Simple, everyday language.
 - **Request Processing:** JSON format, Zod schema validation, HTTP status code-based error handling.
 
 ## Frontend Architecture
-- **Component Structure:** Page-based routing, role-based layouts, reusable Shadcn UI components, modal system.
+- **Component Structure:** Page-based routing, role-based layouts, reusable Shadcn UI components, modal system, interactive map picker.
 - **State Management:** AuthContext for global auth, React Query for server state, local state for UI.
 - **Routing:** Protected routes, loading states, redirects, role-specific views.
+- **Location Selection:** Interactive map-based location picker using Leaflet with OpenStreetMap tiles. Users can click or drag markers to pin their exact location with 7 decimal place precision (~1-10 meter accuracy). Includes "Use My Location" button for GPS positioning.
 
 ## Build & Deployment
 - **Development:** TSX, Vite HMR, Replit plugins.
@@ -61,6 +62,7 @@ Preferred communication style: Simple, everyday language.
 ## UI Component Libraries
 - **Radix UI:** Headless accessible components.
 - **Shadcn UI:** Pre-styled components built on Radix UI.
+- **Leaflet & React-Leaflet:** Interactive map component for location selection.
 
 ## Development Tools
 - **Replit Integrations:** Vite plugins for error modals, cartographer, dev banner.

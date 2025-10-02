@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Package } from "lucide-react";
+import LocationPicker from "@/components/LocationPicker";
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -77,6 +78,14 @@ export default function Register() {
 
   const handleRoleChange = (value: "resident" | "courier" | "admin") => {
     setFormData((prev) => ({ ...prev, role: value }));
+  };
+
+  const handleLocationChange = (lat: string, lng: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+    }));
   };
 
   return (
@@ -218,35 +227,11 @@ export default function Register() {
                     data-testid="input-apartmentName"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="latitude">Latitude</Label>
-                    <Input
-                      id="latitude"
-                      name="latitude"
-                      type="text"
-                      placeholder="-1.286389"
-                      value={formData.latitude}
-                      onChange={handleChange}
-                      data-testid="input-latitude"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="longitude">Longitude</Label>
-                    <Input
-                      id="longitude"
-                      name="longitude"
-                      type="text"
-                      placeholder="36.817223"
-                      value={formData.longitude}
-                      onChange={handleChange}
-                      data-testid="input-longitude"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Tip: You can use Google Maps to find your exact coordinates. Right-click on your location and select the coordinates to copy them.
-                </p>
+                <LocationPicker
+                  latitude={formData.latitude}
+                  longitude={formData.longitude}
+                  onLocationChange={handleLocationChange}
+                />
               </>
             )}
             <div className="space-y-2">
