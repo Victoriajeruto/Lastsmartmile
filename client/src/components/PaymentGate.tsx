@@ -36,7 +36,7 @@ export default function PaymentGate({ children }: PaymentGateProps) {
   const initiatePaymentMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", `/api/payments/initiate`, {
-        amount: 500, // KES 500 for subscription
+        amount: 5, // KES 5 for subscription
         paymentType: "subscription",
         description: "Last Mile Postal System - Subscription Activation",
       });
@@ -118,7 +118,7 @@ export default function PaymentGate({ children }: PaymentGateProps) {
             </div>
             <div className="flex items-center justify-between text-2xl font-bold">
               <span>Total Amount</span>
-              <span className="text-primary">KES 500</span>
+              <span className="text-primary">KES 5</span>
             </div>
             <div className="text-sm text-muted-foreground space-y-2 pt-4 border-t">
               <div className="flex items-center gap-2">
