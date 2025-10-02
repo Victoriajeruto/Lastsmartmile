@@ -213,6 +213,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt: method === "otp" ? OTPService.getExpirationTime() : QRService.getExpirationTime(),
         isUsed: false,
       });
+      
+      if (method === "otp" && otpCode) {
+        await NotificationService.sendUnlockCodeSMS(req.user!.id, otpCode, boxId);
+      }
 
       res.json({
         message: "Unlock code generated successfully",
@@ -315,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await NotificationService.notifyDeliveryAssigned(
         recipient.id, 
         delivery.trackingNumber, 
-        box.location
+        box.boxId
       );
 
       res.status(201).json({
@@ -356,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await NotificationService.notifyDeliveryDelivered(
             delivery.recipientId,
             delivery.trackingNumber,
-            box.location
+            box.boxId
           );
         }
       }

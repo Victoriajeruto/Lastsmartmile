@@ -162,8 +162,28 @@ Preferred communication style: Simple, everyday language.
 - **zod** - Runtime type validation and schema parsing
 - **nanoid** - Unique ID generation
 
+## SMS Integration (Africa's Talking)
+
+**Implementation:**
+- Integrated Africa's Talking API for SMS notifications
+- Automatic fallback to console logging if API credentials not configured
+- SMS sent for key events: delivery assigned, delivered, unlock codes, low battery alerts
+
+**Configuration (Environment Variables):**
+- `AFRICAS_TALKING_API_KEY` - API key from Africa's Talking dashboard
+- `AFRICAS_TALKING_USERNAME` - Username (use "sandbox" for testing)
+- `AFRICAS_TALKING_FROM` - Sender ID (default: "SMARTPOBOX")
+
+**SMS Notifications:**
+- Delivery assigned to box
+- Package delivered notification
+- OTP unlock codes (6-digit, expires in 5 minutes)
+- Low battery alerts (below 20%)
+- Tamper detection alerts
+
 ## Future Integration Points
-- SMS/USSD gateway for notifications (currently console logging)
+- USSD gateway for feature phone support
 - Real-time WebSocket for live delivery updates
-- Payment processing for delivery fees
+- Payment processing for delivery fees (M-Pesa integration planned)
 - External courier API integrations
+- Delivery route optimization with mapping

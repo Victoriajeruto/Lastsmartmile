@@ -1,4 +1,5 @@
 import { storage } from "../storage";
+import { smsService } from "./smsService";
 import { type InsertNotification } from "@shared/schema";
 
 export class NotificationService {
@@ -6,7 +7,6 @@ export class NotificationService {
     try {
       await storage.createNotification(notification);
       
-      // Console logging for now (will be replaced with SMS/USSD later)
       console.log(`📱 NOTIFICATION - User: ${notification.userId}`);
       console.log(`   Title: ${notification.title}`);
       console.log(`   Message: ${notification.message}`);
@@ -18,22 +18,32 @@ export class NotificationService {
     }
   }
 
-  static async notifyDeliveryAssigned(recipientId: string, trackingNumber: string, boxLocation: string): Promise<void> {
+  static async notifyDeliveryAssigned(recipientId: string, trackingNumber: string, boxId: string): Promise<void> {
     await this.createNotification({
       userId: recipientId,
       title: "Package Assigned to Your Box",
-      message: `Your package (${trackingNumber}) has been assigned to your box at ${boxLocation}. You will be notified when it's delivered.`,
+      message: `Your package (${trackingNumber}) has been assigned to box ${boxId}. You will be notified when it's delivered.`,
       type: "delivery_assigned"
     });
+    
+    const user = await storage.getUser(recipientId);
+    if (user?.phone) {
+      await smsService.sendDeliveryAssignedNotification(user.phone, trackingNumber, boxId);
+    }
   }
 
-  static async notifyDeliveryDelivered(recipientId: string, trackingNumber: string, boxLocation: string): Promise<void> {
+  static async notifyDeliveryDelivered(recipientId: string, trackingNumber: string, boxId: string): Promise<void> {
     await this.createNotification({
       userId: recipientId,
       title: "Package Delivered",
-      message: `Your package (${trackingNumber}) has been delivered to your box at ${boxLocation}. Use the app to unlock your box and retrieve it.`,
+      message: `Your package (${trackingNumber}) has been delivered to box ${boxId}. Use the app to unlock your box.`,
       type: "delivery_delivered"
     });
+    
+    const user = await storage.getUser(recipientId);
+    if (user?.phone) {
+      await smsService.sendDeliveryDeliveredNotification(user.phone, trackingNumber, boxId);
+    }
   }
 
   static async notifyBoxUnlocked(userId: string, boxId: string): Promise<void> {
@@ -52,5 +62,17 @@ export class NotificationService {
       message: `Your box ${boxId} has low battery (${batteryLevel}%). Maintenance will be scheduled soon.`,
       type: "low_battery"
     });
+    
+    const user = await storage.getUser(userId);
+    if (user?.phone) {
+      await smsService.sendLowBatteryAlert(user.phone, boxId, batteryLevel);
+    }
+  }
+  
+  static async sendUnlockCodeSMS(userId: string, code: string, boxId: string): Promise<void> {
+    const user = await storage.getUser(userId);
+    if (user?.phone) {
+      await smsService.sendUnlockCodeNotification(user.phone, code, boxId);
+    }
   }
 }
