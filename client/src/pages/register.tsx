@@ -29,6 +29,7 @@ export default function Register() {
     latitude: "",
     longitude: "",
     apartmentName: "",
+    boxCode: "",
   });
 
   if (isAuthenticated) {
@@ -191,6 +192,22 @@ export default function Register() {
 
             {formData.role === "resident" && (
               <>
+                <div className="space-y-2">
+                  <Label htmlFor="boxCode">Smart Box Code</Label>
+                  <Input
+                    id="boxCode"
+                    name="boxCode"
+                    type="text"
+                    placeholder="e.g., KB-2341"
+                    value={formData.boxCode}
+                    onChange={handleChange}
+                    required
+                    data-testid="input-boxCode"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter the unique code on your smart box
+                  </p>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="county">County</Label>
                   <Input

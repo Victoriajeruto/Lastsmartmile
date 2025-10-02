@@ -8,6 +8,7 @@ export const boxStatusEnum = pgEnum("box_status", ["operational", "maintenance",
 export const deliveryStatusEnum = pgEnum("delivery_status", ["pending", "assigned", "in_transit", "delivered", "failed"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "completed", "failed", "refunded"]);
 export const paymentTypeEnum = pgEnum("payment_type", ["subscription", "delivery_fee", "top_up"]);
+export const subscriptionPlanEnum = pgEnum("subscription_plan", ["monthly", "quarterly", "bi_annually", "annually"]);
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -23,7 +24,10 @@ export const users = pgTable("users", {
   latitude: text("latitude"),
   longitude: text("longitude"),
   apartmentName: text("apartment_name"),
+  boxCode: text("box_code"),
   hasCompletedPayment: boolean("has_completed_payment").notNull().default(false),
+  subscriptionPlan: subscriptionPlanEnum("subscription_plan"),
+  subscriptionExpiresAt: timestamp("subscription_expires_at"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -87,6 +91,7 @@ export const payments = pgTable("payments", {
   amount: integer("amount").notNull(),
   email: text("email").notNull(),
   paymentType: paymentTypeEnum("payment_type").notNull().default("subscription"),
+  subscriptionPlan: subscriptionPlanEnum("subscription_plan"),
   status: paymentStatusEnum("status").notNull().default("pending"),
   reference: text("reference").notNull(),
   authorizationUrl: text("authorization_url"),
