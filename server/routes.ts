@@ -12,7 +12,7 @@ import {
 import { OTPService } from "./services/otpService";
 import { QRService } from "./services/qrService";
 import { NotificationService } from "./services/notificationService";
-import { mpesaService } from "./services/mpesaService";
+import { paystackService } from "./services/paystackService";
 import { websocketService } from "./services/websocketService";
 import { optimizeRoute, calculateTotalDistance, estimateDeliveryTime } from "./services/routeOptimizationService";
 import { 
@@ -729,40 +729,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const user = req.user!;
+      const reference = paystackService.generateReference("LMPS");
+      const callbackUrl = process.env.PAYSTACK_CALLBACK_URL || `${req.protocol}://${req.get('host')}/api/payments/verify`;
       
       const payment = await storage.createPayment({
         userId: user.id,
-        amount,
-        phone: user.phone,
+        amount: amount * 100, // Convert to kobo/cents
+        email: user.email,
         paymentType: paymentType || "subscription",
         status: "pending",
-        accountReference: `POBox-${user.id.substring(0, 8)}`,
-        description: description || `Payment for Smart P.O Box - ${paymentType || "subscription"}`,
+        reference,
+        description: description || `Payment for Last Mile Postal System - ${paymentType || "subscription"}`,
       });
       
       try {
-        const stkResponse = await mpesaService.initiateSTKPush({
-          phone: user.phone,
-          amount,
-          accountReference: payment.accountReference!,
-          transactionDesc: payment.description!,
+        const paystackResponse = await paystackService.initializeTransaction({
+          email: user.email,
+          amount: amount * 100, // Paystack expects amount in kobo/cents
+          reference,
+          callback_url: callbackUrl,
+          metadata: {
+            userId: user.id,
+            paymentId: payment.id,
+            paymentType,
+          },
+          channels: ['card', 'mobile_money'], // Support both Visa and M-Pesa
         });
         
         await storage.updatePayment(payment.id, {
-          checkoutRequestId: stkResponse.CheckoutRequestID,
-          merchantRequestId: stkResponse.MerchantRequestID,
+          authorizationUrl: paystackResponse.data.authorization_url,
+          accessCode: paystackResponse.data.access_code,
         });
         
         res.json({
-          message: "Payment initiated. Please check your phone to complete the payment.",
+          message: "Payment initialized. Please complete payment on the provided URL.",
           payment: {
             id: payment.id,
-            amount,
-            checkoutRequestId: stkResponse.CheckoutRequestID,
-            customerMessage: stkResponse.CustomerMessage,
+            amount: amount,
+            reference,
+            authorizationUrl: paystackResponse.data.authorization_url,
           }
         });
-      } catch (stkError: any) {
+      } catch (paystackError: any) {
         await storage.updatePayment(payment.id, { status: "failed" });
         
         await NotificationService.createNotification({
@@ -772,91 +780,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: "payment_failed"
         });
         
-        throw stkError;
+        throw paystackError;
       }
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to initiate payment" });
     }
   });
   
-  app.post("/api/payments/callback", async (req, res) => {
+  // Paystack webhook endpoint for payment notifications
+  app.post("/api/payments/webhook", async (req, res) => {
     try {
-      console.log("📱 M-Pesa Callback Received:", JSON.stringify(req.body, null, 2));
+      console.log("💳 Paystack Webhook Received:", JSON.stringify(req.body, null, 2));
       
-      const { Body } = req.body;
+      const event = req.body;
       
-      if (!Body?.stkCallback) {
-        return res.status(400).json({ message: "Invalid callback data" });
-      }
-      
-      const {
-        MerchantRequestID,
-        CheckoutRequestID,
-        ResultCode,
-        ResultDesc,
-        CallbackMetadata,
-      } = Body.stkCallback;
-      
-      const payment = await storage.getPaymentByCheckoutRequestId(CheckoutRequestID);
-      
-      if (!payment) {
-        console.log(`⚠️  Payment not found for CheckoutRequestID: ${CheckoutRequestID}`);
-        return res.status(404).json({ message: "Payment not found" });
-      }
-      
-      if (ResultCode === 0) {
-        const metadata = CallbackMetadata.Item;
-        const amount = metadata.find((item: any) => item.Name === "Amount")?.Value;
-        const mpesaReceiptNumber = metadata.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;
-        const transactionDateRaw = metadata.find((item: any) => item.Name === "TransactionDate")?.Value;
+      if (event.event === "charge.success") {
+        const { reference, amount, channel, paid_at } = event.data;
         
-        let transactionDate = new Date();
-        if (transactionDateRaw) {
-          const dateStr = String(transactionDateRaw);
-          if (dateStr.length === 14) {
-            const year = dateStr.substring(0, 4);
-            const month = dateStr.substring(4, 6);
-            const day = dateStr.substring(6, 8);
-            const hour = dateStr.substring(8, 10);
-            const minute = dateStr.substring(10, 12);
-            const second = dateStr.substring(12, 14);
-            transactionDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
-          }
+        const payment = await storage.getPaymentByReference(reference);
+        
+        if (!payment) {
+          console.log(`⚠️  Payment not found for reference: ${reference}`);
+          return res.status(404).json({ message: "Payment not found" });
         }
         
         await storage.updatePayment(payment.id, {
           status: "completed",
-          mpesaReceiptNumber,
-          transactionDate,
+          channel,
+          transactionDate: new Date(paid_at),
+        });
+        
+        // Update user's payment status
+        await storage.updateUser(payment.userId, {
+          hasCompletedPayment: true,
         });
         
         await NotificationService.createNotification({
           userId: payment.userId,
           title: "Payment Successful",
-          message: `Your payment of KES ${amount} has been received. Receipt: ${mpesaReceiptNumber}`,
+          message: `Your payment of KES ${amount / 100} has been received. Your dashboard is now activated!`,
           type: "payment_success"
         });
         
-        console.log(`✅ Payment completed - Receipt: ${mpesaReceiptNumber}, Amount: KES ${amount}`);
-      } else {
-        await storage.updatePayment(payment.id, {
-          status: "failed",
-        });
+        console.log(`✅ Payment completed - Reference: ${reference}, Amount: KES ${amount / 100}, Channel: ${channel}`);
+      } else if (event.event === "charge.failed") {
+        const { reference } = event.data;
         
-        await NotificationService.createNotification({
-          userId: payment.userId,
-          title: "Payment Failed",
-          message: `Your payment failed. Reason: ${ResultDesc}. Please try again.`,
-          type: "payment_failed"
-        });
+        const payment = await storage.getPaymentByReference(reference);
         
-        console.log(`❌ Payment failed - ${ResultDesc}`);
+        if (payment) {
+          await storage.updatePayment(payment.id, {
+            status: "failed",
+          });
+          
+          await NotificationService.createNotification({
+            userId: payment.userId,
+            title: "Payment Failed",
+            message: "Your payment failed. Please try again.",
+            type: "payment_failed"
+          });
+          
+          console.log(`❌ Payment failed - Reference: ${reference}`);
+        }
       }
       
-      res.status(200).json({ message: "Callback processed" });
+      res.status(200).json({ message: "Webhook processed" });
     } catch (error: any) {
-      console.error("Error processing M-Pesa callback:", error);
-      res.status(500).json({ message: error.message || "Failed to process callback" });
+      console.error("Error processing Paystack webhook:", error);
+      res.status(500).json({ message: error.message || "Failed to process webhook" });
     }
   });
   
@@ -866,6 +857,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ payments });
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to fetch payment history" });
+    }
+  });
+  
+  // Verify payment by reference
+  app.get("/api/payments/verify/:reference", async (req, res) => {
+    try {
+      const { reference } = req.params;
+      
+      const verifyResponse = await paystackService.verifyTransaction(reference);
+      
+      if (!verifyResponse.status) {
+        return res.status(400).json({ message: "Payment verification failed" });
+      }
+      
+      const payment = await storage.getPaymentByReference(reference);
+      
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      
+      if (verifyResponse.data.status === "success") {
+        await storage.updatePayment(payment.id, {
+          status: "completed",
+          channel: verifyResponse.data.channel,
+          transactionDate: new Date(verifyResponse.data.paid_at),
+        });
+        
+        // Update user's payment status
+        await storage.updateUser(payment.userId, {
+          hasCompletedPayment: true,
+        });
+        
+        await NotificationService.createNotification({
+          userId: payment.userId,
+          title: "Payment Successful",
+          message: `Your payment of KES ${verifyResponse.data.amount / 100} has been received. Your dashboard is now activated!`,
+          type: "payment_success"
+        });
+        
+        res.json({ 
+          message: "Payment verified successfully",
+          status: "success",
+          amount: verifyResponse.data.amount / 100,
+          channel: verifyResponse.data.channel,
+        });
+      } else {
+        await storage.updatePayment(payment.id, { status: "failed" });
+        res.json({ 
+          message: "Payment verification failed",
+          status: verifyResponse.data.status,
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to verify payment" });
     }
   });
   
@@ -882,17 +927,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
       
-      if (payment.status === "pending" && payment.checkoutRequestId) {
+      if (payment.status === "pending" && payment.reference) {
         try {
-          const status = await mpesaService.queryTransactionStatus(payment.checkoutRequestId);
+          const verifyResponse = await paystackService.verifyTransaction(payment.reference);
           
-          if (status.ResultCode === "0") {
-            await storage.updatePayment(payment.id, { status: "completed" });
-          } else if (status.ResultCode !== undefined) {
+          if (verifyResponse.status && verifyResponse.data.status === "success") {
+            await storage.updatePayment(payment.id, { 
+              status: "completed",
+              channel: verifyResponse.data.channel,
+              transactionDate: new Date(verifyResponse.data.paid_at),
+            });
+            
+            // Update user's payment status
+            await storage.updateUser(payment.userId, {
+              hasCompletedPayment: true,
+            });
+          } else if (verifyResponse.data.status === "failed") {
             await storage.updatePayment(payment.id, { status: "failed" });
           }
         } catch (error) {
-          console.error("Failed to query M-Pesa status:", error);
+          console.error("Failed to query Paystack status:", error);
         }
       }
       

@@ -52,7 +52,7 @@ export interface IStorage {
   
   // Payment methods
   getPayment(id: string): Promise<Payment | undefined>;
-  getPaymentByCheckoutRequestId(checkoutRequestId: string): Promise<Payment | undefined>;
+  getPaymentByReference(reference: string): Promise<Payment | undefined>;
   getPaymentsByUserId(userId: string): Promise<Payment[]>;
   createPayment(payment: InsertPayment): Promise<Payment>;
   updatePayment(id: string, updates: Partial<InsertPayment>): Promise<Payment | undefined>;
@@ -276,9 +276,9 @@ export class DatabaseStorage implements IStorage {
     return payment || undefined;
   }
   
-  async getPaymentByCheckoutRequestId(checkoutRequestId: string): Promise<Payment | undefined> {
+  async getPaymentByReference(reference: string): Promise<Payment | undefined> {
     const [payment] = await db.select().from(payments)
-      .where(eq(payments.checkoutRequestId, checkoutRequestId));
+      .where(eq(payments.reference, reference));
     return payment || undefined;
   }
   

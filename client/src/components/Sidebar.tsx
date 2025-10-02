@@ -63,7 +63,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
             </div>
             <div>
               <h1 className="font-bold text-lg text-foreground">Smart P.O Box</h1>
-              <p className="text-xs text-muted-foreground">Kenya Postal System</p>
+              <p className="text-xs text-muted-foreground">Last Mile Postal System</p>
             </div>
           </div>
         </div>

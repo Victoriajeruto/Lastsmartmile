@@ -23,6 +23,11 @@ export default function Register() {
     lastName: "",
     phone: "",
     role: "resident" as "resident" | "courier" | "admin",
+    county: "",
+    constituency: "",
+    latitude: "",
+    longitude: "",
+    apartmentName: "",
   });
 
   if (isAuthenticated) {
@@ -84,7 +89,7 @@ export default function Register() {
             </div>
             <div>
               <h1 className="font-bold text-lg text-foreground">Smart P.O Box</h1>
-              <p className="text-xs text-muted-foreground">Kenya Postal System</p>
+              <p className="text-xs text-muted-foreground">Last Mile Postal System</p>
             </div>
           </div>
           <CardTitle data-testid="register-title">Create Account</CardTitle>
@@ -174,6 +179,76 @@ export default function Register() {
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.role === "resident" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="county">County</Label>
+                  <Input
+                    id="county"
+                    name="county"
+                    type="text"
+                    placeholder="e.g., Nairobi"
+                    value={formData.county}
+                    onChange={handleChange}
+                    data-testid="input-county"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="constituency">Constituency</Label>
+                  <Input
+                    id="constituency"
+                    name="constituency"
+                    type="text"
+                    placeholder="e.g., Westlands"
+                    value={formData.constituency}
+                    onChange={handleChange}
+                    data-testid="input-constituency"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="apartmentName">Apartment Name</Label>
+                  <Input
+                    id="apartmentName"
+                    name="apartmentName"
+                    type="text"
+                    placeholder="e.g., Riverside Apartments"
+                    value={formData.apartmentName}
+                    onChange={handleChange}
+                    data-testid="input-apartmentName"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="latitude">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      name="latitude"
+                      type="text"
+                      placeholder="-1.286389"
+                      value={formData.latitude}
+                      onChange={handleChange}
+                      data-testid="input-latitude"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="longitude">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      name="longitude"
+                      type="text"
+                      placeholder="36.817223"
+                      value={formData.longitude}
+                      onChange={handleChange}
+                      data-testid="input-longitude"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Tip: You can use Google Maps to find your exact coordinates. Right-click on your location and select the coordinates to copy them.
+                </p>
+              </>
+            )}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
