@@ -630,6 +630,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User management routes
+  app.get("/api/users", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json({ users });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get users" });
+    }
+  });
+  
   // Analytics routes
   app.get("/api/analytics/users/count", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
     try {

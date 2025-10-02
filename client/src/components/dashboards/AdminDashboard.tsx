@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { authApi } from "@/lib/auth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { 
   Package, 
   Users, 
@@ -18,12 +23,36 @@ import {
   TrendingUp,
   Wifi,
   TriangleAlert,
-  Battery
+  Battery,
+  PackagePlus
 } from "lucide-react";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [timeRange, setTimeRange] = useState("7");
+  const [boxModalOpen, setBoxModalOpen] = useState(false);
+  const [deliveryModalOpen, setDeliveryModalOpen] = useState(false);
+  const { toast } = useToast();
+  
+  // Box registration form state
+  const [boxForm, setBoxForm] = useState({
+    boxId: "",
+    location: "",
+    latitude: "",
+    longitude: "",
+    batteryLevel: "100",
+  });
+  
+  // Delivery assignment form state
+  const [deliveryForm, setDeliveryForm] = useState({
+    boxId: "",
+    recipientId: "",
+    courierId: "",
+    packageType: "",
+    priority: "normal",
+    weight: "",
+    notes: "",
+  });
 
   const { data: boxes, isLoading: boxesLoading } = useQuery({
     queryKey: ["/api/boxes"],
@@ -39,6 +68,104 @@ export default function AdminDashboard() {
     queryKey: ["/api/analytics/users/count"],
     enabled: !!authApi.getToken(),
   });
+  
+  const { data: usersData } = useQuery({
+    queryKey: ["/api/users"],
+    enabled: !!authApi.getToken(),
+  });
+  
+  const residents = usersData?.users?.filter((u: any) => u.role === "resident") || [];
+  const couriers = usersData?.users?.filter((u: any) => u.role === "courier") || [];
+  
+  // Box registration mutation
+  const registerBoxMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/boxes/register", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/boxes"] });
+      toast({
+        title: "Success",
+        description: "Box registered successfully",
+      });
+      setBoxModalOpen(false);
+      setBoxForm({
+        boxId: "",
+        location: "",
+        latitude: "",
+        longitude: "",
+        batteryLevel: "100",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to register box",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Delivery assignment mutation
+  const assignDeliveryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/deliveries/assign", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/deliveries"] });
+      toast({
+        title: "Success",
+        description: "Delivery assigned successfully",
+      });
+      setDeliveryModalOpen(false);
+      setDeliveryForm({
+        boxId: "",
+        recipientId: "",
+        courierId: "",
+        packageType: "",
+        priority: "normal",
+        weight: "",
+        notes: "",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign delivery",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const handleRegisterBox = () => {
+    const data: any = {
+      boxId: boxForm.boxId,
+      location: boxForm.location,
+      batteryLevel: parseInt(boxForm.batteryLevel) || 100,
+    };
+    
+    if (boxForm.latitude) data.latitude = boxForm.latitude;
+    if (boxForm.longitude) data.longitude = boxForm.longitude;
+    
+    registerBoxMutation.mutate(data);
+  };
+  
+  const handleAssignDelivery = () => {
+    const data: any = {
+      boxId: deliveryForm.boxId,
+      recipientId: deliveryForm.recipientId,
+      packageType: deliveryForm.packageType,
+      priority: deliveryForm.priority,
+    };
+    
+    if (deliveryForm.courierId) data.courierId = deliveryForm.courierId;
+    if (deliveryForm.weight) data.weight = deliveryForm.weight;
+    if (deliveryForm.notes) data.notes = deliveryForm.notes;
+    
+    assignDeliveryMutation.mutate(data);
+  };
 
   const getBoxStatusColor = (status: string) => {
     switch (status) {
@@ -166,16 +293,26 @@ export default function AdminDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-foreground">Delivery Analytics</h3>
-                <Select value={timeRange} onValueChange={setTimeRange}>
-                  <SelectTrigger className="w-32" data-testid="select-time-range">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7">Last 7 days</SelectItem>
-                    <SelectItem value="30">Last 30 days</SelectItem>
-                    <SelectItem value="90">Last 90 days</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setDeliveryModalOpen(true)}
+                    className="flex items-center gap-2"
+                    data-testid="button-assign-delivery"
+                  >
+                    <PackagePlus className="w-4 h-4" />
+                    <span>Assign Delivery</span>
+                  </Button>
+                  <Select value={timeRange} onValueChange={setTimeRange}>
+                    <SelectTrigger className="w-32" data-testid="select-time-range">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7">Last 7 days</SelectItem>
+                      <SelectItem value="30">Last 30 days</SelectItem>
+                      <SelectItem value="90">Last 90 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
               {/* Chart placeholder */}
@@ -310,7 +447,11 @@ export default function AdminDashboard() {
                   data-testid="input-search-boxes"
                 />
               </div>
-              <Button className="flex items-center gap-2" data-testid="button-add-box">
+              <Button 
+                className="flex items-center gap-2" 
+                onClick={() => setBoxModalOpen(true)}
+                data-testid="button-add-box"
+              >
                 <Plus className="w-4 h-4" />
                 <span>Add Box</span>
               </Button>
@@ -485,6 +626,235 @@ export default function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Box Registration Modal */}
+      <Dialog open={boxModalOpen} onOpenChange={setBoxModalOpen}>
+        <DialogContent className="max-w-md" data-testid="dialog-register-box">
+          <DialogHeader>
+            <DialogTitle>Register New Smart Box</DialogTitle>
+            <DialogDescription>
+              Add a new smart box to the system
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="boxId">Box ID *</Label>
+              <Input
+                id="boxId"
+                placeholder="KB-2341"
+                value={boxForm.boxId}
+                onChange={(e) => setBoxForm({ ...boxForm, boxId: e.target.value })}
+                data-testid="input-box-id"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="location">Location *</Label>
+              <Input
+                id="location"
+                placeholder="Westlands, Nairobi"
+                value={boxForm.location}
+                onChange={(e) => setBoxForm({ ...boxForm, location: e.target.value })}
+                data-testid="input-location"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input
+                  id="latitude"
+                  placeholder="-1.2921"
+                  value={boxForm.latitude}
+                  onChange={(e) => setBoxForm({ ...boxForm, latitude: e.target.value })}
+                  data-testid="input-latitude"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input
+                  id="longitude"
+                  placeholder="36.8219"
+                  value={boxForm.longitude}
+                  onChange={(e) => setBoxForm({ ...boxForm, longitude: e.target.value })}
+                  data-testid="input-longitude"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="batteryLevel">Battery Level (%)</Label>
+              <Input
+                id="batteryLevel"
+                type="number"
+                min="0"
+                max="100"
+                value={boxForm.batteryLevel}
+                onChange={(e) => setBoxForm({ ...boxForm, batteryLevel: e.target.value })}
+                data-testid="input-battery-level"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setBoxModalOpen(false)}
+                data-testid="button-cancel-box"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRegisterBox}
+                disabled={!boxForm.boxId || !boxForm.location || registerBoxMutation.isPending}
+                data-testid="button-submit-box"
+              >
+                {registerBoxMutation.isPending ? "Registering..." : "Register Box"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delivery Assignment Modal */}
+      <Dialog open={deliveryModalOpen} onOpenChange={setDeliveryModalOpen}>
+        <DialogContent className="max-w-md" data-testid="dialog-assign-delivery">
+          <DialogHeader>
+            <DialogTitle>Assign Delivery to Courier</DialogTitle>
+            <DialogDescription>
+              Create and assign a package to a courier
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="boxId">Smart Box *</Label>
+              <Select
+                value={deliveryForm.boxId}
+                onValueChange={(value) => setDeliveryForm({ ...deliveryForm, boxId: value })}
+              >
+                <SelectTrigger id="boxId" data-testid="select-box">
+                  <SelectValue placeholder="Select a box" />
+                </SelectTrigger>
+                <SelectContent>
+                  {boxes?.boxes?.map((box: any) => (
+                    <SelectItem key={box.id} value={box.id}>
+                      {box.boxId} - {box.location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="recipientId">Recipient (Resident) *</Label>
+              <Select
+                value={deliveryForm.recipientId}
+                onValueChange={(value) => setDeliveryForm({ ...deliveryForm, recipientId: value })}
+              >
+                <SelectTrigger id="recipientId" data-testid="select-recipient">
+                  <SelectValue placeholder="Select recipient" />
+                </SelectTrigger>
+                <SelectContent>
+                  {residents.map((resident: any) => (
+                    <SelectItem key={resident.id} value={resident.id}>
+                      {resident.firstName} {resident.lastName} - {resident.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="courierId">Assign to Courier (Optional)</Label>
+              <Select
+                value={deliveryForm.courierId}
+                onValueChange={(value) => setDeliveryForm({ ...deliveryForm, courierId: value })}
+              >
+                <SelectTrigger id="courierId" data-testid="select-courier">
+                  <SelectValue placeholder="Leave unassigned or select courier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Unassigned (Pending)</SelectItem>
+                  {couriers.map((courier: any) => (
+                    <SelectItem key={courier.id} value={courier.id}>
+                      {courier.firstName} {courier.lastName} - {courier.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="packageType">Package Type *</Label>
+              <Input
+                id="packageType"
+                placeholder="e.g. Documents, Electronics"
+                value={deliveryForm.packageType}
+                onChange={(e) => setDeliveryForm({ ...deliveryForm, packageType: e.target.value })}
+                data-testid="input-package-type"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Select
+                  value={deliveryForm.priority}
+                  onValueChange={(value) => setDeliveryForm({ ...deliveryForm, priority: value })}
+                >
+                  <SelectTrigger id="priority" data-testid="select-priority">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="express">Express</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="weight">Weight (kg)</Label>
+                <Input
+                  id="weight"
+                  placeholder="2.5"
+                  value={deliveryForm.weight}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, weight: e.target.value })}
+                  data-testid="input-weight"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                placeholder="Special delivery instructions..."
+                value={deliveryForm.notes}
+                onChange={(e) => setDeliveryForm({ ...deliveryForm, notes: e.target.value })}
+                data-testid="input-notes"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setDeliveryModalOpen(false)}
+                data-testid="button-cancel-delivery"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignDelivery}
+                disabled={!deliveryForm.boxId || !deliveryForm.recipientId || !deliveryForm.packageType || assignDeliveryMutation.isPending}
+                data-testid="button-submit-delivery"
+              >
+                {assignDeliveryMutation.isPending ? "Assigning..." : "Assign Delivery"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
