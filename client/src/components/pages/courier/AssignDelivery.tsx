@@ -1,15 +1,70 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 import { authApi } from "@/lib/auth";
-import { PackageOpen, MapPin, Clock, CheckCircle } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { PackageOpen, MapPin, Clock, CheckCircle, Loader2 } from "lucide-react";
 
 export default function AssignDelivery() {
+  const { toast } = useToast();
+  
   const { data: deliveries, isLoading } = useQuery({
     queryKey: ["/api/deliveries"],
     enabled: !!authApi.getToken(),
+  });
+  
+  const assignMutation = useMutation({
+    mutationFn: async (deliveryId: string) => {
+      const delivery = deliveries?.deliveries?.find((d: any) => d.id === deliveryId);
+      const response = await apiRequest("POST", "/api/deliveries/assign", {
+        ...delivery,
+        courierId: authApi.getUser()?.id,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/deliveries"] });
+      toast({
+        title: "Success",
+        description: "Delivery assigned successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign delivery",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const assignAllMutation = useMutation({
+    mutationFn: async () => {
+      const promises = pendingDeliveries.map((delivery: any) => 
+        apiRequest("POST", "/api/deliveries/assign", {
+          ...delivery,
+          courierId: authApi.getUser()?.id,
+        }).then(res => res.json())
+      );
+      return Promise.all(promises);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/deliveries"] });
+      toast({
+        title: "Success",
+        description: "All deliveries assigned successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign deliveries",
+        variant: "destructive",
+      });
+    },
   });
 
   const pendingDeliveries = deliveries?.deliveries?.filter(
@@ -53,8 +108,16 @@ export default function AssignDelivery() {
               <PackageOpen className="w-5 h-5" />
               Pending Deliveries ({pendingDeliveries.length})
             </span>
-            <Button data-testid="button-assign-all">
-              <CheckCircle className="w-4 h-4 mr-2" />
+            <Button 
+              onClick={() => assignAllMutation.mutate()}
+              disabled={!pendingDeliveries.length || assignAllMutation.isPending}
+              data-testid="button-assign-all"
+            >
+              {assignAllMutation.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4 mr-2" />
+              )}
               Assign All to Me
             </Button>
           </CardTitle>
@@ -88,9 +151,15 @@ export default function AssignDelivery() {
                   </div>
                   <Button 
                     size="sm"
+                    onClick={() => assignMutation.mutate(delivery.id)}
+                    disabled={assignMutation.isPending}
                     data-testid={`button-assign-${delivery.id}`}
                   >
-                    Assign to Me
+                    {assignMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Assign to Me"
+                    )}
                   </Button>
                 </div>
               </div>
