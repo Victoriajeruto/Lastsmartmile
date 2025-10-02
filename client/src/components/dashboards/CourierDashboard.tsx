@@ -60,6 +60,12 @@ export default function CourierDashboard() {
     enabled: !!authApi.getToken(),
   });
 
+  const { data: optimizedRoute } = useQuery({
+    queryKey: ["/api/deliveries/route/optimized"],
+    enabled: !!authApi.getToken(),
+    refetchInterval: 30000,
+  });
+
   const assignDeliveryMutation = useMutation({
     mutationFn: async (data: DeliveryFormData) => {
       const token = authApi.getToken();
@@ -104,8 +110,9 @@ export default function CourierDashboard() {
         weight: "",
         notes: "",
       });
-      // Invalidate deliveries query to refresh data
+      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/deliveries"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deliveries/route/optimized"] });
     },
     onError: (error: any) => {
       toast({
@@ -143,6 +150,7 @@ export default function CourierDashboard() {
         description: "Delivery status has been updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/deliveries"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deliveries/route/optimized"] });
     },
     onError: (error: any) => {
       toast({
@@ -402,29 +410,32 @@ export default function CourierDashboard() {
           </CardContent>
         </Card>
 
-        {/* Today's Route */}
+        {/* Optimized Route */}
         <Card>
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Today's Route</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Optimized Route</h3>
             <div className="aspect-square bg-muted rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-card/90 to-transparent flex items-end p-6">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Westlands - CBD - Kilimani Route</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {optimizedRoute?.totalStops ? `${optimizedRoute.totalStops} Stops` : "No active route"}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {courierDeliveries.length} stops remaining • Active deliveries
+                    {optimizedRoute?.totalDistance ? `${optimizedRoute.totalDistance} km` : ""} 
+                    {optimizedRoute?.estimatedTime ? ` • ~${optimizedRoute.estimatedTime} min` : ""}
                   </p>
                 </div>
               </div>
               <MapPin className="w-16 h-16 text-muted-foreground" />
             </div>
             <div className="space-y-3" data-testid="route-stops">
-              {courierDeliveries.slice(0, 3).map((delivery: any, index: number) => (
+              {optimizedRoute?.route?.slice(0, 5).map((stop: any, index: number) => (
                 <div
-                  key={delivery.id}
+                  key={stop.deliveryId}
                   className={`flex items-center gap-3 p-3 rounded-lg ${
                     index === 0 ? "bg-primary/10 border-2 border-primary" : "bg-muted/50"
                   }`}
-                  data-testid={`route-stop-${delivery.id}`}
+                  data-testid={`route-stop-${stop.deliveryId}`}
                 >
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold ${
                     index === 0 ? "bg-primary text-primary-foreground" : "bg-muted border border-border text-muted-foreground"
@@ -433,14 +444,18 @@ export default function CourierDashboard() {
                   </div>
                   <div className="flex-1">
                     <p className={`text-sm font-medium ${index === 0 ? "text-foreground" : "text-muted-foreground"}`}>
-                      Box {delivery.trackingNumber}
+                      {stop.boxId} - {stop.location.split(',')[0]}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {delivery.status === "in_transit" ? "In progress" : "Next stop"}
+                      {stop.priority === "urgent" ? "🔴 Urgent" : stop.priority === "express" ? "🟡 Express" : "🟢 Normal"}
                     </p>
                   </div>
                 </div>
-              ))}
+              )) || (
+                <p className="text-center text-muted-foreground py-4">
+                  No deliveries to optimize
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

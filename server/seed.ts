@@ -53,16 +53,75 @@ export async function seedTestData() {
       console.log("✓ Created test courier:", courier.username);
     }
     
-    const boxExists = await storage.getBoxByBoxId("KB-TEST1");
-    if (!boxExists) {
-      const box = await storage.createBox({
-        boxId: "KB-TEST1",
-        location: "Westlands Hub, Nairobi",
-        ownerId: residentId,
-        status: "operational",
-        batteryLevel: 100
-      });
-      console.log("✓ Created test box:", box.boxId);
+    const testBoxes = [
+      { boxId: "KB-WE01", location: "Westlands Hub, Nairobi", latitude: "-1.2640", longitude: "36.8063", batteryLevel: 100 },
+      { boxId: "KB-CBD01", location: "CBD Central Post, Nairobi", latitude: "-1.2864", longitude: "36.8172", batteryLevel: 85 },
+      { boxId: "KB-KIL01", location: "Kilimani Mall, Nairobi", latitude: "-1.2921", longitude: "36.7872", batteryLevel: 92 },
+      { boxId: "KB-KAR01", location: "Karen Shopping Centre", latitude: "-1.3197", longitude: "36.7079", batteryLevel: 78 },
+      { boxId: "KB-UP01", location: "Upper Hill Plaza, Nairobi", latitude: "-1.2941", longitude: "36.8261", batteryLevel: 95 }
+    ];
+
+    const createdBoxes = [];
+    for (const boxData of testBoxes) {
+      const boxExists = await storage.getBoxByBoxId(boxData.boxId);
+      if (!boxExists) {
+        const box = await storage.createBox({
+          boxId: boxData.boxId,
+          location: boxData.location,
+          latitude: boxData.latitude,
+          longitude: boxData.longitude,
+          ownerId: residentId,
+          status: "operational",
+          batteryLevel: boxData.batteryLevel
+        });
+        console.log("✓ Created test box:", boxData.boxId);
+        createdBoxes.push(box);
+      } else {
+        createdBoxes.push(boxExists);
+      }
+    }
+
+    const courierUser = await storage.getUserByUsername("test_courier");
+    if (courierUser && createdBoxes.length >= 3) {
+      const testDeliveries = [
+        { 
+          trackingNumber: "TRK-001", 
+          boxId: createdBoxes[0].id, 
+          priority: "urgent",
+          packageType: "small_parcel" 
+        },
+        { 
+          trackingNumber: "TRK-002", 
+          boxId: createdBoxes[1].id, 
+          priority: "normal",
+          packageType: "medium_package" 
+        },
+        { 
+          trackingNumber: "TRK-003", 
+          boxId: createdBoxes[2].id, 
+          priority: "express",
+          packageType: "document" 
+        },
+      ];
+
+      for (const deliveryData of testDeliveries) {
+        const deliveryExists = await storage.getDeliveryByTrackingNumber(deliveryData.trackingNumber);
+        if (!deliveryExists) {
+          await storage.createDelivery({
+            trackingNumber: deliveryData.trackingNumber,
+            boxId: deliveryData.boxId,
+            courierId: courierUser.id,
+            recipientId: residentId,
+            packageType: deliveryData.packageType,
+            priority: deliveryData.priority,
+            weight: "1.5",
+            notes: "Test delivery",
+            status: "assigned",
+            assignedAt: new Date() as any
+          });
+          console.log("✓ Created test delivery:", deliveryData.trackingNumber);
+        }
+      }
     }
     
     console.log("Test data seeding completed!");

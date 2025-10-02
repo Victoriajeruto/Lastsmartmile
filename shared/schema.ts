@@ -27,6 +27,8 @@ export const boxes = pgTable("boxes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   boxId: text("box_id").notNull().unique(), // Human readable ID like KB-2341
   location: text("location").notNull(),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
   ownerId: varchar("owner_id").references(() => users.id),
   status: boxStatusEnum("status").notNull().default("operational"),
   batteryLevel: integer("battery_level").default(100),

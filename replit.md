@@ -261,6 +261,34 @@ Preferred communication style: Simple, everyday language.
 - Connection tracking by user and role
 - Real-time delivery status propagation across dashboards
 
+## Delivery Route Optimization
+
+**Route Optimization Algorithm:**
+- Nearest neighbor algorithm (greedy TSP approximation)
+- Priority-based routing: Urgent → Express → Normal
+- Geographic distance optimization using Haversine formula
+- Real-time route calculation based on active deliveries
+
+**API Endpoint:**
+- `GET /api/deliveries/route/optimized` (courier only)
+- Returns optimized delivery sequence with:
+  - Complete route with coordinates and delivery details
+  - Total distance in kilometers
+  - Estimated delivery time in minutes
+  - Total number of stops
+
+**Frontend Features:**
+- Visual route display in Courier Dashboard
+- Shows optimized delivery sequence (top 5 stops)
+- Priority indicators: 🔴 Urgent, 🟡 Express, 🟢 Normal
+- Real-time route statistics (distance, time, stops)
+- Auto-refresh every 30 seconds
+
+**Box Coordinates:**
+- Added latitude/longitude fields to boxes table
+- Seed data includes real Nairobi coordinates
+- Test locations: Westlands, CBD, Kilimani, Karen, Upper Hill
+
 ## Enhanced Box Monitoring
 
 **Battery Monitoring:**

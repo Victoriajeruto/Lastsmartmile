@@ -14,6 +14,7 @@ import { QRService } from "./services/qrService";
 import { NotificationService } from "./services/notificationService";
 import { mpesaService } from "./services/mpesaService";
 import { websocketService } from "./services/websocketService";
+import { optimizeRoute, calculateTotalDistance, estimateDeliveryTime } from "./services/routeOptimizationService";
 import { 
   insertUserSchema, 
   loginSchema, 
@@ -420,6 +421,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ deliveries });
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to fetch deliveries" });
+    }
+  });
+
+  app.get("/api/deliveries/route/optimized", requireAuth, requireRole(["courier"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const deliveries = await storage.getDeliveriesByCourierId(req.user!.id);
+      const activeDeliveries = deliveries.filter((d: any) => 
+        d.status === "assigned" || d.status === "in_transit"
+      );
+
+      if (activeDeliveries.length === 0) {
+        return res.json({ 
+          route: [], 
+          totalDistance: 0, 
+          estimatedTime: 0,
+          message: "No active deliveries to optimize" 
+        });
+      }
+
+      const deliveryLocations = await Promise.all(
+        activeDeliveries.map(async (delivery: any) => {
+          const box = await storage.getBox(delivery.boxId);
+          if (!box || !box.latitude || !box.longitude) {
+            return null;
+          }
+          return {
+            id: box.id,
+            boxId: box.boxId,
+            location: box.location,
+            latitude: box.latitude,
+            longitude: box.longitude,
+            deliveryId: delivery.id,
+            trackingNumber: delivery.trackingNumber,
+            priority: delivery.priority,
+            packageType: delivery.packageType
+          };
+        })
+      );
+
+      const validLocations = deliveryLocations.filter((loc): loc is NonNullable<typeof loc> => loc !== null);
+
+      if (validLocations.length === 0) {
+        return res.json({ 
+          route: [], 
+          totalDistance: 0, 
+          estimatedTime: 0,
+          message: "No deliveries with valid coordinates" 
+        });
+      }
+
+      const optimizedRoute = optimizeRoute(validLocations);
+      const totalDistance = calculateTotalDistance(optimizedRoute);
+      const estimatedTime = estimateDeliveryTime(optimizedRoute);
+
+      res.json({
+        route: optimizedRoute,
+        totalDistance: Math.round(totalDistance * 10) / 10,
+        estimatedTime,
+        totalStops: optimizedRoute.length
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to optimize route" });
     }
   });
 
