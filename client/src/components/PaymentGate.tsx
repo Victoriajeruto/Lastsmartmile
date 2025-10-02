@@ -4,21 +4,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { authApi } from "@/lib/auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { CreditCard, CheckCircle, XCircle, Loader2, ArrowRight } from "lucide-react";
+import { CreditCard, CheckCircle, XCircle, Loader2, ArrowRight, Calendar } from "lucide-react";
 
 interface PaymentGateProps {
   children: React.ReactNode;
 }
+
+type SubscriptionPlan = "monthly" | "quarterly" | "bi_annually" | "annually";
+
+const PLAN_PRICES = {
+  monthly: 5,
+  quarterly: 15,
+  bi_annually: 30,
+  annually: 60,
+};
+
+const PLAN_LABELS = {
+  monthly: "Monthly",
+  quarterly: "Quarterly (3 months)",
+  bi_annually: "Bi-Annually (6 months)",
+  annually: "Annually (12 months)",
+};
 
 export default function PaymentGate({ children }: PaymentGateProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [authUrl, setAuthUrl] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>("monthly");
 
   // Check user's payment status
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -35,10 +54,12 @@ export default function PaymentGate({ children }: PaymentGateProps) {
 
   const initiatePaymentMutation = useMutation({
     mutationFn: async () => {
+      const amount = PLAN_PRICES[selectedPlan];
       const response = await apiRequest("POST", `/api/payments/initiate`, {
-        amount: 5, // KES 5 for subscription
+        amount,
         paymentType: "subscription",
-        description: "Last Mile Postal System - Subscription Activation",
+        subscriptionPlan: selectedPlan,
+        description: `Last Mile Postal System - ${PLAN_LABELS[selectedPlan]} Subscription`,
       });
       return response.json();
     },
@@ -110,17 +131,69 @@ export default function PaymentGate({ children }: PaymentGateProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Subscription Details */}
+          {/* Account Status */}
+          {userData && (
+            <div className="bg-muted/50 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Account Status</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {userData.email}
+                  </p>
+                </div>
+                <Badge variant="destructive">Payment Required</Badge>
+              </div>
+            </div>
+          )}
+
+          {/* Subscription Plan Selection */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary" />
+              <Label className="text-base font-semibold">Choose Your Subscription Plan</Label>
+            </div>
+            <RadioGroup value={selectedPlan} onValueChange={(value) => setSelectedPlan(value as SubscriptionPlan)}>
+              <div className="space-y-3">
+                {(Object.keys(PLAN_PRICES) as SubscriptionPlan[]).map((plan) => (
+                  <div
+                    key={plan}
+                    className={`flex items-center justify-between p-4 rounded-lg border-2 transition-colors cursor-pointer ${
+                      selectedPlan === plan
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    onClick={() => setSelectedPlan(plan)}
+                    data-testid={`plan-${plan}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <RadioGroupItem value={plan} id={plan} />
+                      <Label htmlFor={plan} className="cursor-pointer">
+                        <span className="font-medium">{PLAN_LABELS[plan]}</span>
+                        {plan !== "monthly" && (
+                          <Badge variant="secondary" className="ml-2 text-xs">
+                            Save {Math.round((1 - (PLAN_PRICES[plan] / (PLAN_PRICES.monthly * (plan === "quarterly" ? 3 : plan === "bi_annually" ? 6 : 12)))) * 100)}%
+                          </Badge>
+                        )}
+                      </Label>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-primary">KES {PLAN_PRICES[plan]}</p>
+                      {plan !== "monthly" && (
+                        <p className="text-xs text-muted-foreground">
+                          KES {(PLAN_PRICES[plan] / (plan === "quarterly" ? 3 : plan === "bi_annually" ? 6 : 12)).toFixed(2)}/month
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Subscription Benefits */}
           <div className="bg-muted/50 rounded-lg p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Subscription Plan</span>
-              <Badge variant="default">Monthly</Badge>
-            </div>
-            <div className="flex items-center justify-between text-2xl font-bold">
-              <span>Total Amount</span>
-              <span className="text-primary">KES 5</span>
-            </div>
-            <div className="text-sm text-muted-foreground space-y-2 pt-4 border-t">
+            <p className="text-sm font-semibold">What's Included:</p>
+            <div className="text-sm text-muted-foreground space-y-2">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-success" />
                 <span>Secure package delivery to your smart box</span>

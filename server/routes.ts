@@ -724,7 +724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Payment routes
   app.post("/api/payments/initiate", requireAuth, async (req: AuthenticatedRequest, res) => {
     try {
-      const { amount, paymentType, description } = req.body;
+      const { amount, paymentType, description, subscriptionPlan } = req.body;
       
       if (!amount || amount < 1) {
         return res.status(400).json({ message: "Invalid amount" });
@@ -739,6 +739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: amount * 100, // Convert to kobo/cents
         email: user.email,
         paymentType: paymentType || "subscription",
+        subscriptionPlan: subscriptionPlan || "monthly",
         status: "pending",
         reference,
         description: description || `Payment for Last Mile Postal System - ${paymentType || "subscription"}`,
@@ -812,9 +813,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           transactionDate: new Date(paid_at),
         });
         
-        // Update user's payment status
+        // Calculate subscription expiry date based on plan
+        const subscriptionPlan = payment.subscriptionPlan || "monthly";
+        const now = new Date();
+        const expiryDate = new Date(now);
+        
+        switch (subscriptionPlan) {
+          case "monthly":
+            expiryDate.setMonth(expiryDate.getMonth() + 1);
+            break;
+          case "quarterly":
+            expiryDate.setMonth(expiryDate.getMonth() + 3);
+            break;
+          case "bi_annually":
+            expiryDate.setMonth(expiryDate.getMonth() + 6);
+            break;
+          case "annually":
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+            break;
+        }
+        
+        // Update user's payment status and subscription details
         await storage.updateUser(payment.userId, {
           hasCompletedPayment: true,
+          subscriptionPlan,
+          subscriptionExpiresAt: expiryDate as any,
         });
         
         await NotificationService.createNotification({
@@ -824,7 +847,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: "payment_success"
         });
         
-        console.log(`✅ Payment completed - Reference: ${reference}, Amount: KES ${amount / 100}, Channel: ${channel}`);
+        console.log(`✅ Payment completed - Reference: ${reference}, Amount: KES ${amount / 100}, Channel: ${channel}, Plan: ${subscriptionPlan}`);
       } else if (event.event === "charge.failed") {
         const { reference } = event.data;
         
