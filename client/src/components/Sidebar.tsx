@@ -74,7 +74,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
 
   return (
     <aside className="w-64 bg-card border-r border-border flex-shrink-0" data-testid="sidebar">
-      <div className="h-full flex flex-column">
+      <div className="h-full flex flex-col">
         {/* Logo/Brand */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
