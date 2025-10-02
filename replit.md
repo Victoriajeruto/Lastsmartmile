@@ -32,6 +32,10 @@ Preferred communication style: Simple, everyday language.
 ## API Design Patterns
 - **RESTful Endpoints:** Standardized endpoints for authentication, box management, deliveries, notifications, and unlock operations.
 - **Request Processing:** JSON format, Zod schema validation, HTTP status code-based error handling.
+- **Admin Box Registration:** POST /api/boxes/register - Admins can register new smart boxes with boxId, location, coordinates, and battery level.
+- **Admin Delivery Assignment:** POST /api/deliveries/assign - Admins create deliveries and assign to couriers or leave as pending (admin-only endpoint).
+- **Courier Self-Assignment:** PATCH /api/deliveries/:id/assign-to-me - Couriers self-assign pending deliveries (courier-only endpoint, prevents privilege escalation).
+- **Security:** Login accepts both username and email; delivery endpoints enforce role-based access control.
 
 ## Frontend Architecture
 - **Component Structure:** Page-based routing, role-based layouts, reusable Shadcn UI components, modal system, interactive map picker.
