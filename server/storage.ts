@@ -29,6 +29,7 @@ export interface IStorage {
   getDeliveryByTrackingNumber(trackingNumber: string): Promise<Delivery | undefined>;
   getDeliveriesByRecipientId(recipientId: string): Promise<Delivery[]>;
   getDeliveriesByCourierId(courierId: string): Promise<Delivery[]>;
+  getPendingDeliveries(): Promise<Delivery[]>;
   getDeliveriesByBoxId(boxId: string): Promise<Delivery[]>;
   getAllDeliveries(): Promise<Delivery[]>;
   createDelivery(delivery: InsertDelivery): Promise<Delivery>;
@@ -156,6 +157,12 @@ export class DatabaseStorage implements IStorage {
   async getDeliveriesByCourierId(courierId: string): Promise<Delivery[]> {
     return await db.select().from(deliveries)
       .where(eq(deliveries.courierId, courierId))
+      .orderBy(desc(deliveries.createdAt));
+  }
+  
+  async getPendingDeliveries(): Promise<Delivery[]> {
+    return await db.select().from(deliveries)
+      .where(eq(deliveries.status, "pending"))
       .orderBy(desc(deliveries.createdAt));
   }
 

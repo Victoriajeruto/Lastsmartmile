@@ -47,7 +47,7 @@ export default function AdminDashboard() {
   const [deliveryForm, setDeliveryForm] = useState({
     boxId: "",
     recipientId: "",
-    courierId: "",
+    courierId: "unassigned",
     packageType: "",
     priority: "normal",
     weight: "",
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
       setDeliveryForm({
         boxId: "",
         recipientId: "",
-        courierId: "",
+        courierId: "unassigned",
         packageType: "",
         priority: "normal",
         weight: "",
@@ -160,7 +160,9 @@ export default function AdminDashboard() {
       priority: deliveryForm.priority,
     };
     
-    if (deliveryForm.courierId) data.courierId = deliveryForm.courierId;
+    if (deliveryForm.courierId && deliveryForm.courierId !== "unassigned") {
+      data.courierId = deliveryForm.courierId;
+    }
     if (deliveryForm.weight) data.weight = deliveryForm.weight;
     if (deliveryForm.notes) data.notes = deliveryForm.notes;
     
@@ -768,13 +770,13 @@ export default function AdminDashboard() {
               <Label htmlFor="courierId">Assign to Courier (Optional)</Label>
               <Select
                 value={deliveryForm.courierId}
-                onValueChange={(value) => setDeliveryForm({ ...deliveryForm, courierId: value })}
+                onValueChange={(value) => setDeliveryForm({ ...deliveryForm, courierId: value === "unassigned" ? "" : value })}
               >
                 <SelectTrigger id="courierId" data-testid="select-courier">
                   <SelectValue placeholder="Leave unassigned or select courier" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned (Pending)</SelectItem>
+                  <SelectItem value="unassigned">Unassigned (Pending)</SelectItem>
                   {couriers.map((courier: any) => (
                     <SelectItem key={courier.id} value={courier.id}>
                       {courier.firstName} {courier.lastName} - {courier.email}

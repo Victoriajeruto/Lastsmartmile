@@ -18,11 +18,7 @@ export default function AssignDelivery() {
   
   const assignMutation = useMutation({
     mutationFn: async (deliveryId: string) => {
-      const delivery = deliveries?.deliveries?.find((d: any) => d.id === deliveryId);
-      const response = await apiRequest("POST", "/api/deliveries/assign", {
-        ...delivery,
-        courierId: authApi.getUser()?.id,
-      });
+      const response = await apiRequest("PATCH", `/api/deliveries/${deliveryId}/assign-to-me`, {});
       return response.json();
     },
     onSuccess: () => {
@@ -44,10 +40,7 @@ export default function AssignDelivery() {
   const assignAllMutation = useMutation({
     mutationFn: async () => {
       const promises = pendingDeliveries.map((delivery: any) => 
-        apiRequest("POST", "/api/deliveries/assign", {
-          ...delivery,
-          courierId: authApi.getUser()?.id,
-        }).then(res => res.json())
+        apiRequest("PATCH", `/api/deliveries/${delivery.id}/assign-to-me`, {}).then(res => res.json())
       );
       return Promise.all(promises);
     },

@@ -74,8 +74,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = loginSchema.parse(req.body);
       
-      // Find user
-      const user = await storage.getUserByUsername(username);
+      // Find user by username or email
+      let user = await storage.getUserByUsername(username);
+      if (!user) {
+        user = await storage.getUserByEmail(username);
+      }
+      
       if (!user || !user.isActive) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -291,10 +295,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delivery management routes
-  app.post("/api/deliveries/assign", requireAuth, requireRole(["courier", "admin"]), async (req: AuthenticatedRequest, res) => {
+  // Delivery management routes (admin only - couriers use self-assignment endpoint)
+  app.post("/api/deliveries/assign", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
     try {
-      const deliveryData = insertDeliverySchema.parse(req.body);
+      // Make trackingNumber optional for assignment
+      const deliverySchema = insertDeliverySchema.extend({
+        trackingNumber: insertDeliverySchema.shape.trackingNumber.optional(),
+      });
+      
+      const deliveryData = deliverySchema.parse(req.body);
       
       // Verify box exists
       const box = await storage.getBox(deliveryData.boxId);
@@ -313,11 +322,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         deliveryData.trackingNumber = `TRK-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       }
 
+      // Determine status and courier based on assignment
+      let status = "pending";
+      let courierId = deliveryData.courierId;
+      let assignedAt = undefined;
+      
+      // If courierId is provided, it's being assigned
+      if (deliveryData.courierId) {
+        status = "assigned";
+        assignedAt = new Date() as any;
+      } 
+      // If no courierId but user is a courier (self-assigning)
+      else if (req.user!.role === "courier") {
+        status = "assigned";
+        courierId = req.user!.id;
+        assignedAt = new Date() as any;
+      }
+
       const delivery = await storage.createDelivery({
         ...deliveryData,
-        courierId: req.user!.id,
-        status: "assigned",
-        assignedAt: new Date() as any,
+        courierId,
+        status,
+        assignedAt,
       });
 
       // Send notification to recipient
@@ -346,6 +372,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Courier self-assignment endpoint
+  app.patch("/api/deliveries/:id/assign-to-me", requireAuth, requireRole(["courier"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      
+      const delivery = await storage.getDelivery(id);
+      if (!delivery) {
+        return res.status(404).json({ message: "Delivery not found" });
+      }
+
+      // Only allow assignment of pending deliveries
+      if (delivery.status !== "pending") {
+        return res.status(400).json({ message: "Delivery is not available for assignment" });
+      }
+
+      // Update delivery to assign to courier
+      const updatedDelivery = await storage.updateDelivery(id, {
+        courierId: req.user!.id,
+        status: "assigned",
+        assignedAt: new Date() as any,
+      });
+
+      // Send notification to recipient
+      await NotificationService.notifyDeliveryAssigned(
+        delivery.recipientId,
+        delivery.trackingNumber,
+        delivery.boxId
+      );
+
+      websocketService.sendToUser(delivery.recipientId, {
+        type: "delivery_assigned",
+        data: updatedDelivery
+      });
+
+      res.json({
+        message: "Delivery assigned successfully",
+        delivery: updatedDelivery
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to assign delivery" });
+    }
+  });
+  
   app.patch("/api/deliveries/:id/status", requireAuth, requireRole(["courier", "admin"]), async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
@@ -413,7 +482,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.user!.role === "admin") {
         deliveries = await storage.getAllDeliveries();
       } else if (req.user!.role === "courier") {
-        deliveries = await storage.getDeliveriesByCourierId(req.user!.id);
+        // Couriers see deliveries assigned to them AND pending (unassigned) deliveries
+        const assignedDeliveries = await storage.getDeliveriesByCourierId(req.user!.id);
+        const pendingDeliveries = await storage.getPendingDeliveries();
+        
+        // Combine and deduplicate
+        const deliveryMap = new Map();
+        [...assignedDeliveries, ...pendingDeliveries].forEach(d => deliveryMap.set(d.id, d));
+        deliveries = Array.from(deliveryMap.values());
       } else if (req.user!.role === "resident") {
         deliveries = await storage.getDeliveriesByRecipientId(req.user!.id);
       } else {
