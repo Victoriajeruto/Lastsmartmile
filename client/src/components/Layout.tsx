@@ -6,6 +6,7 @@ import ResidentDashboard from "./dashboards/ResidentDashboard";
 import CourierDashboard from "./dashboards/CourierDashboard";
 import AdminDashboard from "./dashboards/AdminDashboard";
 import UnlockBoxModal from "./modals/UnlockBoxModal";
+import PaymentGate from "./PaymentGate";
 
 export default function Layout() {
   const { user } = useAuth();
@@ -19,7 +20,11 @@ export default function Layout() {
       case "admin":
         return <AdminDashboard />;
       default:
-        return <ResidentDashboard onOpenUnlockModal={() => setIsUnlockModalOpen(true)} />;
+        return (
+          <PaymentGate>
+            <ResidentDashboard onOpenUnlockModal={() => setIsUnlockModalOpen(true)} />
+          </PaymentGate>
+        );
     }
   };
 

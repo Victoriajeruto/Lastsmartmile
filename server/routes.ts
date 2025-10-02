@@ -112,14 +112,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     res.json({
-      user: {
-        id: req.user.id,
-        username: req.user.username,
-        email: req.user.email,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        role: req.user.role,
-      }
+      id: req.user.id,
+      username: req.user.username,
+      email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      role: req.user.role,
+      hasCompletedPayment: req.user.hasCompletedPayment || false,
+      county: req.user.county,
+      constituency: req.user.constituency,
+      apartmentName: req.user.apartmentName,
     });
   });
 
