@@ -489,6 +489,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics routes
+  app.get("/api/analytics/users/count", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const count = await storage.getUserCount();
+      res.json({ count });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get user count" });
+    }
+  });
+  
+  app.get("/api/analytics/courier/performance", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const performance = await storage.getCourierPerformance(req.user!.id);
+      res.json(performance);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get performance metrics" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

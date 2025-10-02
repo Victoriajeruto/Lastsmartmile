@@ -34,6 +34,11 @@ export default function AdminDashboard() {
     queryKey: ["/api/deliveries"],
     enabled: !!authApi.getToken(),
   });
+  
+  const { data: userCountData } = useQuery({
+    queryKey: ["/api/analytics/users/count"],
+    enabled: !!authApi.getToken(),
+  });
 
   const getBoxStatusColor = (status: string) => {
     switch (status) {
@@ -115,8 +120,7 @@ export default function AdminDashboard() {
               <Users className="text-2xl opacity-80" />
             </div>
             <p className="text-3xl font-bold mb-1" data-testid="active-users-count">
-              {/* This would come from a users count API */}
-              {totalBoxes * 1.2} {/* Approximation for demo */}
+              {userCountData?.count || 0}
             </p>
             <p className="text-xs opacity-75 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />

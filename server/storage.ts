@@ -43,6 +43,11 @@ export interface IStorage {
   getNotificationsByUserId(userId: string): Promise<Notification[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationAsRead(id: string): Promise<Notification | undefined>;
+  
+  // Analytics methods
+  getUserCount(): Promise<number>;
+  getAllUsers(): Promise<User[]>;
+  getCourierPerformance(courierId: string): Promise<{ totalDeliveries: number; completedDeliveries: number; rating: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -221,6 +226,32 @@ export class DatabaseStorage implements IStorage {
       .where(eq(notifications.id, id))
       .returning();
     return notification || undefined;
+  }
+  
+  // Analytics methods
+  async getUserCount(): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(users);
+    return Number(result[0]?.count || 0);
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+  
+  async getCourierPerformance(courierId: string): Promise<{ totalDeliveries: number; completedDeliveries: number; rating: number }> {
+    const allDeliveries = await this.getDeliveriesByCourierId(courierId);
+    const totalDeliveries = allDeliveries.length;
+    const completedDeliveries = allDeliveries.filter(d => d.status === 'delivered').length;
+    
+    const rating = totalDeliveries > 0 
+      ? Math.min(5, 3 + (completedDeliveries / totalDeliveries) * 2)
+      : 0;
+    
+    return {
+      totalDeliveries,
+      completedDeliveries,
+      rating: Math.round(rating * 10) / 10
+    };
   }
 }
 

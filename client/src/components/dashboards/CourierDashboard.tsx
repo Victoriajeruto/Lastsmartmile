@@ -54,6 +54,11 @@ export default function CourierDashboard() {
     queryKey: ["/api/boxes"],
     enabled: !!authApi.getToken(),
   });
+  
+  const { data: performance } = useQuery({
+    queryKey: ["/api/analytics/courier/performance"],
+    enabled: !!authApi.getToken(),
+  });
 
   const assignDeliveryMutation = useMutation({
     mutationFn: async (data: DeliveryFormData) => {
@@ -274,9 +279,9 @@ export default function CourierDashboard() {
               </div>
             </div>
             <p className="text-2xl font-bold text-foreground mb-1" data-testid="performance-rating">
-              4.8
+              {performance?.rating?.toFixed(1) || "N/A"}
             </p>
-            <p className="text-xs text-muted-foreground">Average rating</p>
+            <p className="text-xs text-muted-foreground">{performance?.completedDeliveries || 0} completed</p>
           </CardContent>
         </Card>
       </div>
