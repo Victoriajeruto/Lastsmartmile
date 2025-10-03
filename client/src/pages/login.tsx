@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Package, Lock, Truck, Bell, Shield, MapPin, Zap, CheckCircle2 } from "lucide-react";
+import { Package, Lock, Truck, Bell, Shield, Zap, CheckCircle2 } from "lucide-react";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -77,7 +78,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Information Section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground p-12 flex-col justify-between relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground p-12 flex-col justify-between relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
@@ -128,18 +129,24 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Bottom Stats */}
+        {/* Bottom Stats with Animated Counters */}
         <div className="relative z-10 grid grid-cols-3 gap-8 pt-8 border-t border-white/20">
           <div>
-            <div className="text-3xl font-bold mb-1">99.9%</div>
+            <div className="text-3xl font-bold mb-1">
+              <AnimatedCounter end={99.9} decimals={1} suffix="%" />
+            </div>
             <div className="text-sm opacity-80">Uptime</div>
           </div>
           <div>
-            <div className="text-3xl font-bold mb-1">24/7</div>
+            <div className="text-3xl font-bold mb-1">
+              <AnimatedCounter end={24} suffix="/7" />
+            </div>
             <div className="text-sm opacity-80">Support</div>
           </div>
           <div>
-            <div className="text-3xl font-bold mb-1">100%</div>
+            <div className="text-3xl font-bold mb-1">
+              <AnimatedCounter end={100} suffix="%" />
+            </div>
             <div className="text-sm opacity-80">Secure</div>
           </div>
         </div>

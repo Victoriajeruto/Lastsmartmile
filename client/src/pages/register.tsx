@@ -4,11 +4,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Package } from "lucide-react";
+import { Package, Lock, Truck, Bell, Shield, Zap, CheckCircle2 } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -89,25 +89,131 @@ export default function Register() {
     }));
   };
 
+  const features = [
+    {
+      icon: Lock,
+      title: "Secure Smart Lockboxes",
+      description: "State-of-the-art security with OTP and QR code access"
+    },
+    {
+      icon: Truck,
+      title: "Real-Time Tracking",
+      description: "Track your deliveries from dispatch to your doorstep"
+    },
+    {
+      icon: Bell,
+      title: "Instant Notifications",
+      description: "Get notified via SMS and in-app alerts for every delivery"
+    },
+    {
+      icon: Shield,
+      title: "24/7 Monitoring",
+      description: "Tamper detection and battery monitoring for peace of mind"
+    }
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Package className="text-primary-foreground text-xl" />
+    <div className="min-h-screen flex">
+      {/* Left Side - Information Section */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground p-12 flex-col justify-between relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10">
+          {/* Logo and Brand */}
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+              <Package className="text-3xl" />
             </div>
             <div>
-              <h1 className="font-bold text-lg text-foreground">Smart P.O Box</h1>
+              <h1 className="font-bold text-2xl">Smart P.O Box</h1>
+              <p className="text-sm opacity-90">Last Mile Postal System</p>
+            </div>
+          </div>
+
+          {/* Main Heading */}
+          <div className="mb-12">
+            <h2 className="text-4xl font-bold leading-tight mb-4">
+              Revolutionizing Last-Mile Delivery
+            </h2>
+            <p className="text-lg opacity-90 leading-relaxed">
+              Secure, automated parcel delivery with smart lockboxes. Experience the future of package management with real-time tracking, instant notifications, and unmatched security.
+            </p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 gap-6">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className="flex items-start gap-4 p-4 rounded-xl bg-white/10 backdrop-blur-sm hover:bg-white/15 transition-all duration-300"
+                >
+                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon className="text-xl" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-1">{feature.title}</h3>
+                    <p className="text-sm opacity-80">{feature.description}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom Stats with Animated Counters */}
+        <div className="relative z-10 grid grid-cols-3 gap-8 pt-8 border-t border-white/20">
+          <div>
+            <div className="text-3xl font-bold mb-1">
+              <AnimatedCounter end={99.9} decimals={1} suffix="%" />
+            </div>
+            <div className="text-sm opacity-80">Uptime</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold mb-1">
+              <AnimatedCounter end={24} suffix="/7" />
+            </div>
+            <div className="text-sm opacity-80">Support</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold mb-1">
+              <AnimatedCounter end={100} suffix="%" />
+            </div>
+            <div className="text-sm opacity-80">Secure</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Register Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background overflow-y-auto">
+        <div className="w-full max-w-md py-8">
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
+            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+              <Package className="text-primary-foreground text-2xl" />
+            </div>
+            <div>
+              <h1 className="font-bold text-xl text-foreground">Smart P.O Box</h1>
               <p className="text-xs text-muted-foreground">Last Mile Postal System</p>
             </div>
           </div>
-          <CardTitle data-testid="register-title">Create Account</CardTitle>
-          <CardDescription data-testid="register-description">
-            Join the Smart P.O Box system
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+
+          {/* Form Header */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-foreground mb-2" data-testid="register-title">
+              Create Account
+            </h2>
+            <p className="text-muted-foreground" data-testid="register-description">
+              Join the Smart P.O Box system today
+            </p>
+          </div>
+
+          {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -279,25 +385,56 @@ export default function Register() {
             </div>
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-12 text-base font-medium"
               disabled={isLoading}
               data-testid="button-register"
             >
-              {isLoading ? "Creating Account..." : "Create Account"}
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                  Creating Account...
+                </div>
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
+
+          {/* Sign In Link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link href="/login">
-                <Button variant="link" className="p-0 h-auto" data-testid="link-login">
+                <Button
+                  variant="link"
+                  className="p-0 h-auto font-semibold text-primary"
+                  data-testid="link-login"
+                >
                   Sign in
                 </Button>
               </Link>
             </p>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Trust Indicators */}
+          <div className="mt-8 pt-8 border-t border-border">
+            <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Shield className="w-4 h-4" />
+                <span>Secure Login</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Zap className="w-4 h-4" />
+                <span>Fast Access</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Verified</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
