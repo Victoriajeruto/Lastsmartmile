@@ -74,6 +74,11 @@ export default function AdminDashboard() {
     enabled: !!authApi.getToken(),
   });
   
+  const { data: subscriptionsData, isLoading: subscriptionsLoading } = useQuery({
+    queryKey: ["/api/subscriptions"],
+    enabled: !!authApi.getToken(),
+  });
+  
   const residents = usersData?.users?.filter((u: any) => u.role === "resident") || [];
   const couriers = usersData?.users?.filter((u: any) => u.role === "courier") || [];
   
@@ -591,7 +596,96 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* User Management Preview */}
+      {/* Subscription Management */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Subscription Management</h3>
+            <p className="text-sm text-muted-foreground">
+              Total Subscribers: {subscriptionsData?.subscriptions?.length || 0}
+            </p>
+          </div>
+          
+          <div className="overflow-x-auto">
+            {subscriptionsLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center space-x-4 py-3">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                ))}
+              </div>
+            ) : subscriptionsData?.subscriptions?.length > 0 ? (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Resident</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Email</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Boxes</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Plan</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Amount (KES)</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Expires</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscriptionsData.subscriptions.map((sub: any) => (
+                    <tr key={sub.id} className="border-b border-border hover:bg-muted/50" data-testid={`subscription-row-${sub.id}`}>
+                      <td className="py-3 px-4">
+                        <div className="text-sm font-medium text-foreground">
+                          {sub.firstName} {sub.lastName}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm text-muted-foreground">{sub.email}</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm text-foreground" data-testid={`box-count-${sub.id}`}>
+                          {sub.boxCount}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="capitalize" data-testid={`subscription-plan-${sub.id}`}>
+                          {sub.subscriptionPlan || "None"}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm text-foreground" data-testid={`subscription-amount-${sub.id}`}>
+                          {sub.amount > 0 ? sub.amount.toLocaleString() : "-"}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm text-muted-foreground" data-testid={`subscription-expiry-${sub.id}`}>
+                          {sub.subscriptionExpiresAt ? new Date(sub.subscriptionExpiresAt).toLocaleDateString() : "Not set"}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge 
+                          variant={sub.hasCompletedPayment ? "default" : "destructive"}
+                          data-testid={`subscription-status-${sub.id}`}
+                        >
+                          {sub.hasCompletedPayment ? "Active" : "Pending"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No subscriptions to display</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Box Activity */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">

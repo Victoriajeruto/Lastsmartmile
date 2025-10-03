@@ -279,32 +279,57 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSubscriptions(): Promise<any[]> {
-    // Get all residents with their box count and latest payment info
-    const residents = await db.select().from(users).where(eq(users.role, "resident"));
+    // Get all residents with their box count using a single efficient query
+    const residentsWithBoxCount = await db
+      .select({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        phone: users.phone,
+        subscriptionPlan: users.subscriptionPlan,
+        subscriptionExpiresAt: users.subscriptionExpiresAt,
+        hasCompletedPayment: users.hasCompletedPayment,
+        createdAt: users.createdAt,
+        boxCount: sql<number>`COUNT(DISTINCT ${boxes.id})::int`,
+      })
+      .from(users)
+      .leftJoin(boxes, eq(boxes.ownerId, users.id))
+      .where(eq(users.role, "resident"))
+      .groupBy(users.id);
     
-    const subscriptions = await Promise.all(residents.map(async (user) => {
-      // Get box count for this user
-      const userBoxes = await db.select().from(boxes).where(eq(boxes.ownerId, user.id));
-      const boxCount = userBoxes.length;
-      
-      // Get latest payment for this user
-      const [latestPayment] = await db.select()
-        .from(payments)
-        .where(and(
-          eq(payments.userId, user.id),
-          eq(payments.paymentType, "subscription"),
-          eq(payments.status, "completed")
-        ))
-        .orderBy(desc(payments.createdAt))
-        .limit(1);
-      
+    // Get latest payment for each resident in a single query
+    const latestPayments = await db
+      .select({
+        userId: payments.userId,
+        amount: payments.amount,
+        transactionDate: payments.transactionDate,
+      })
+      .from(payments)
+      .where(and(
+        eq(payments.paymentType, "subscription"),
+        eq(payments.status, "completed")
+      ))
+      .orderBy(desc(payments.createdAt));
+    
+    // Create a map of latest payment per user
+    const paymentMap = new Map();
+    latestPayments.forEach(payment => {
+      if (!paymentMap.has(payment.userId)) {
+        paymentMap.set(payment.userId, payment);
+      }
+    });
+    
+    // Combine the data
+    return residentsWithBoxCount.map(user => {
+      const latestPayment = paymentMap.get(user.id);
       return {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         phone: user.phone,
-        boxCount,
+        boxCount: user.boxCount,
         subscriptionPlan: user.subscriptionPlan,
         subscriptionExpiresAt: user.subscriptionExpiresAt,
         hasCompletedPayment: user.hasCompletedPayment,
@@ -312,9 +337,7 @@ export class DatabaseStorage implements IStorage {
         lastPaymentDate: latestPayment?.transactionDate || null,
         createdAt: user.createdAt,
       };
-    }));
-    
-    return subscriptions;
+    });
   }
   
   // Payment methods
