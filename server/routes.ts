@@ -715,6 +715,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Failed to get users" });
     }
   });
+
+  // Subscription management routes
+  app.get("/api/subscriptions", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const subscriptions = await storage.getSubscriptions();
+      res.json({ subscriptions });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get subscriptions" });
+    }
+  });
   
   // Analytics routes
   app.get("/api/analytics/users/count", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {

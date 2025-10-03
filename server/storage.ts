@@ -50,6 +50,7 @@ export interface IStorage {
   getUserCount(): Promise<number>;
   getAllUsers(): Promise<User[]>;
   getCourierPerformance(courierId: string): Promise<{ totalDeliveries: number; completedDeliveries: number; rating: number }>;
+  getSubscriptions(): Promise<any[]>;
   
   // Payment methods
   getPayment(id: string): Promise<Payment | undefined>;
@@ -275,6 +276,45 @@ export class DatabaseStorage implements IStorage {
       completedDeliveries,
       rating: Math.round(rating * 10) / 10
     };
+  }
+
+  async getSubscriptions(): Promise<any[]> {
+    // Get all residents with their box count and latest payment info
+    const residents = await db.select().from(users).where(eq(users.role, "resident"));
+    
+    const subscriptions = await Promise.all(residents.map(async (user) => {
+      // Get box count for this user
+      const userBoxes = await db.select().from(boxes).where(eq(boxes.ownerId, user.id));
+      const boxCount = userBoxes.length;
+      
+      // Get latest payment for this user
+      const [latestPayment] = await db.select()
+        .from(payments)
+        .where(and(
+          eq(payments.userId, user.id),
+          eq(payments.paymentType, "subscription"),
+          eq(payments.status, "completed")
+        ))
+        .orderBy(desc(payments.createdAt))
+        .limit(1);
+      
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        boxCount,
+        subscriptionPlan: user.subscriptionPlan,
+        subscriptionExpiresAt: user.subscriptionExpiresAt,
+        hasCompletedPayment: user.hasCompletedPayment,
+        amount: latestPayment?.amount || 0,
+        lastPaymentDate: latestPayment?.transactionDate || null,
+        createdAt: user.createdAt,
+      };
+    }));
+    
+    return subscriptions;
   }
   
   // Payment methods
