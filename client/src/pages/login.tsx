@@ -271,6 +271,30 @@ export default function Login() {
               </div>
             </div>
           </div>
+
+          {/* Mobile Stats - Only visible on mobile */}
+          <div className="lg:hidden mt-8 pt-8 border-t border-border">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-primary mb-1">
+                  <AnimatedCounter end={99.9} decimals={1} suffix="%" />
+                </div>
+                <div className="text-xs text-muted-foreground">Uptime</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary mb-1">
+                  <AnimatedCounter end={24} suffix="/7" />
+                </div>
+                <div className="text-xs text-muted-foreground">Support</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary mb-1">
+                  <AnimatedCounter end={100} suffix="%" />
+                </div>
+                <div className="text-xs text-muted-foreground">Secure</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
