@@ -35,6 +35,7 @@ Preferred communication style: Simple, everyday language.
 - **Admin Box Registration:** POST /api/boxes/register - Admins can register new smart boxes with boxId, location, coordinates, and battery level.
 - **Admin Delivery Assignment:** POST /api/deliveries/assign - Admins create deliveries and assign to couriers or leave as pending (admin-only endpoint).
 - **Courier Self-Assignment:** PATCH /api/deliveries/:id/assign-to-me - Couriers self-assign pending deliveries (courier-only endpoint, prevents privilege escalation).
+- **Subscription Management:** GET /api/subscriptions - Admins view all resident subscriptions with box counts, plans, amounts paid, and expiry dates (optimized JOIN queries).
 - **Security:** Login accepts both username and email; delivery endpoints enforce role-based access control.
 
 ## Frontend Architecture
