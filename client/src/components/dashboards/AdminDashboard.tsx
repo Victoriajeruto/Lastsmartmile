@@ -54,27 +54,27 @@ export default function AdminDashboard() {
     notes: "",
   });
 
-  const { data: boxes, isLoading: boxesLoading } = useQuery({
+  const { data: boxes, isLoading: boxesLoading } = useQuery<{ boxes: any[] }>({
     queryKey: ["/api/boxes"],
     enabled: !!authApi.getToken(),
   });
 
-  const { data: deliveries, isLoading: deliveriesLoading } = useQuery({
+  const { data: deliveries, isLoading: deliveriesLoading } = useQuery<{ deliveries: any[] }>({
     queryKey: ["/api/deliveries"],
     enabled: !!authApi.getToken(),
   });
   
-  const { data: userCountData } = useQuery({
+  const { data: userCountData } = useQuery<{ count: number }>({
     queryKey: ["/api/analytics/users/count"],
     enabled: !!authApi.getToken(),
   });
   
-  const { data: usersData } = useQuery({
+  const { data: usersData } = useQuery<{ users: any[] }>({
     queryKey: ["/api/users"],
     enabled: !!authApi.getToken(),
   });
   
-  const { data: subscriptionsData, isLoading: subscriptionsLoading } = useQuery({
+  const { data: subscriptionsData, isLoading: subscriptionsLoading } = useQuery<{ subscriptions: any[] }>({
     queryKey: ["/api/subscriptions"],
     enabled: !!authApi.getToken(),
   });
@@ -619,7 +619,7 @@ export default function AdminDashboard() {
                   </div>
                 ))}
               </div>
-            ) : subscriptionsData?.subscriptions?.length > 0 ? (
+            ) : subscriptionsData?.subscriptions && subscriptionsData.subscriptions.length > 0 ? (
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
@@ -633,7 +633,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {subscriptionsData.subscriptions.map((sub: any) => (
+                  {subscriptionsData?.subscriptions?.map((sub: any) => (
                     <tr key={sub.id} className="border-b border-border hover:bg-muted/50" data-testid={`subscription-row-${sub.id}`}>
                       <td className="py-3 px-4">
                         <div className="text-sm font-medium text-foreground">

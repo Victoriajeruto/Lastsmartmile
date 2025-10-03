@@ -273,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update box last activity
       await storage.updateBox(box.id, { 
-        lastActivity: new Date() as any,
+        lastActivity: new Date(),
       });
 
       // Send notification
@@ -318,29 +318,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate tracking number if not provided
-      if (!deliveryData.trackingNumber) {
-        deliveryData.trackingNumber = `TRK-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      }
+      const trackingNumber = deliveryData.trackingNumber || 
+        `TRK-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
       // Determine status and courier based on assignment
-      let status = "pending";
+      let status: "pending" | "assigned" = "pending";
       let courierId = deliveryData.courierId;
-      let assignedAt = undefined;
+      let assignedAt: Date | undefined = undefined;
       
       // If courierId is provided, it's being assigned
       if (deliveryData.courierId) {
         status = "assigned";
-        assignedAt = new Date() as any;
+        assignedAt = new Date();
       } 
       // If no courierId but user is a courier (self-assigning)
       else if (req.user!.role === "courier") {
         status = "assigned";
         courierId = req.user!.id;
-        assignedAt = new Date() as any;
+        assignedAt = new Date();
       }
 
       const delivery = await storage.createDelivery({
         ...deliveryData,
+        trackingNumber,
         courierId,
         status,
         assignedAt,
@@ -391,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedDelivery = await storage.updateDelivery(id, {
         courierId: req.user!.id,
         status: "assigned",
-        assignedAt: new Date() as any,
+        assignedAt: new Date(),
       });
 
       // Send notification to recipient

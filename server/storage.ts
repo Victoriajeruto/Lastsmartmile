@@ -22,7 +22,7 @@ export interface IStorage {
   getBoxesByOwnerId(ownerId: string): Promise<Box[]>;
   getAllBoxes(): Promise<Box[]>;
   createBox(box: InsertBox): Promise<Box>;
-  updateBox(id: string, updates: Partial<InsertBox>): Promise<Box | undefined>;
+  updateBox(id: string, updates: Partial<Omit<Box, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Box | undefined>;
 
   // Delivery methods
   getDelivery(id: string): Promise<Delivery | undefined>;
@@ -32,8 +32,8 @@ export interface IStorage {
   getPendingDeliveries(): Promise<Delivery[]>;
   getDeliveriesByBoxId(boxId: string): Promise<Delivery[]>;
   getAllDeliveries(): Promise<Delivery[]>;
-  createDelivery(delivery: InsertDelivery): Promise<Delivery>;
-  updateDelivery(id: string, updates: Partial<InsertDelivery>): Promise<Delivery | undefined>;
+  createDelivery(delivery: InsertDelivery & { assignedAt?: Date | null }): Promise<Delivery>;
+  updateDelivery(id: string, updates: Partial<Omit<Delivery, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Delivery | undefined>;
 
   // Unlock code methods
   getUnlockCode(id: string): Promise<UnlockCode | undefined>;
@@ -129,7 +129,7 @@ export class DatabaseStorage implements IStorage {
     return box;
   }
 
-  async updateBox(id: string, updates: Partial<InsertBox>): Promise<Box | undefined> {
+  async updateBox(id: string, updates: Partial<Omit<Box, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Box | undefined> {
     const [box] = await db
       .update(boxes)
       .set({ ...updates, updatedAt: sql`CURRENT_TIMESTAMP` })
@@ -177,7 +177,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(deliveries).orderBy(desc(deliveries.createdAt));
   }
 
-  async createDelivery(insertDelivery: InsertDelivery): Promise<Delivery> {
+  async createDelivery(insertDelivery: InsertDelivery & { assignedAt?: Date | null }): Promise<Delivery> {
     const [delivery] = await db
       .insert(deliveries)
       .values(insertDelivery)
@@ -185,7 +185,7 @@ export class DatabaseStorage implements IStorage {
     return delivery;
   }
 
-  async updateDelivery(id: string, updates: Partial<InsertDelivery>): Promise<Delivery | undefined> {
+  async updateDelivery(id: string, updates: Partial<Omit<Delivery, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Delivery | undefined> {
     const [delivery] = await db
       .update(deliveries)
       .set({ ...updates, updatedAt: sql`CURRENT_TIMESTAMP` })
