@@ -11,6 +11,8 @@ export const paymentTypeEnum = pgEnum("payment_type", ["subscription", "delivery
 export const subscriptionPlanEnum = pgEnum("subscription_plan", ["monthly", "quarterly", "bi_annually", "annually"]);
 export const serviceTypeEnum = pgEnum("service_type", ["standard", "express", "premium"]);
 export const installationStatusEnum = pgEnum("installation_status", ["pending", "scheduled", "in_progress", "completed", "cancelled"]);
+export const establishmentStatusEnum = pgEnum("establishment_status", ["new", "existing"]);
+export const establishmentTypeEnum = pgEnum("establishment_type", ["standalone", "apartments", "common_area", "business_establishment"]);
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -128,6 +130,8 @@ export const installationRequests = pgTable("installation_requests", {
   apartmentName: text("apartment_name"),
   latitude: text("latitude"),
   longitude: text("longitude"),
+  establishmentStatus: establishmentStatusEnum("establishment_status").notNull().default("new"),
+  establishmentType: establishmentTypeEnum("establishment_type").notNull().default("standalone"),
   preferredDate: timestamp("preferred_date"),
   status: installationStatusEnum("status").notNull().default("pending"),
   notes: text("notes"),
