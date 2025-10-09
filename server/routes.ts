@@ -310,6 +310,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!box) {
         return res.status(404).json({ message: "Box not found" });
       }
+      
+      // Verify box is active (not deactivated/inactive)
+      if (!box.isActive) {
+        return res.status(400).json({ message: "This box is currently inactive and cannot be used for deliveries" });
+      }
 
       // Verify recipient exists
       const recipient = await storage.getUser(deliveryData.recipientId);
