@@ -19,10 +19,11 @@ Preferred communication style: Simple, everyday language.
 - **Token Expiration:** 24 hours.
 
 ## Database Schema
-- **Core Tables:** `users` (with enhanced resident profile and payment tracking), `boxes`, `deliveries`, `payments` (Paystack integration), `unlock_codes`, `notifications`.
-- **Relationships:** Boxes link to users, deliveries link boxes, couriers, recipients; payments link to users; unlock codes to boxes; notifications to users.
-- **Status Enums:** User roles, box status (operational, maintenance, offline), delivery status (pending, assigned, in_transit, delivered, failed), payment status (pending, completed, failed).
-- **User Registration:** Includes `county`, `constituency`, `apartmentName`, `latitude`, `longitude` for residents. Location is selected via interactive map with ~1-10 meter accuracy.
+- **Core Tables:** `users` (enhanced profile, supports multiple accounts per email), `boxes` (with `isActive` status), `deliveries` (with `serviceType`), `payments` (Paystack integration), `unlock_codes`, `notifications`, `installation_requests`, `service_pricing`.
+- **Relationships:** Boxes link to users, deliveries link boxes/couriers/recipients; payments link to users; unlock codes to boxes; notifications to users; installation requests track hardware deployment.
+- **Status Enums:** User roles, box status (operational, maintenance, offline), delivery status (pending, assigned, in_transit, delivered, failed), payment status (pending, completed, failed), installation request status (pending, contacted, scheduled, completed, cancelled), service types (standard, express, premium).
+- **User Registration:** Includes `county`, `estateName`, `apartmentName`, `latitude`, `longitude` for residents. Location is selected via interactive map with ~1-10 meter accuracy. Email field is non-unique to support multiple accounts per email.
+- **Box Active Status:** `isActive` boolean field prevents allocation of deactivated/inactive boxes. Only active boxes can be assigned to deliveries.
 
 ## Service Layer Architecture
 - **OTPService:** Generates and validates 6-digit OTPs with expiration.
@@ -30,13 +31,16 @@ Preferred communication style: Simple, everyday language.
 - **NotificationService:** Creates in-app notifications for delivery events, low battery, etc., with placeholder for SMS/USSD.
 
 ## API Design Patterns
-- **RESTful Endpoints:** Standardized endpoints for authentication, box management, deliveries, notifications, and unlock operations.
+- **RESTful Endpoints:** Standardized endpoints for authentication, box management, deliveries, notifications, unlock operations, installation requests, and service pricing.
 - **Request Processing:** JSON format, Zod schema validation, HTTP status code-based error handling.
 - **Admin Box Registration:** POST /api/boxes/register - Admins can register new smart boxes with boxId, location, coordinates, and battery level.
-- **Admin Delivery Assignment:** POST /api/deliveries/assign - Admins create deliveries and assign to couriers or leave as pending (admin-only endpoint).
+- **Admin Delivery Assignment:** POST /api/deliveries/assign - Admins create deliveries with service type selection and assign to couriers or leave as pending (admin-only endpoint). Validates box is active before assignment.
 - **Courier Self-Assignment:** PATCH /api/deliveries/:id/assign-to-me - Couriers self-assign pending deliveries (courier-only endpoint, prevents privilege escalation).
 - **Subscription Management:** GET /api/subscriptions - Admins view all resident subscriptions with box counts, plans, amounts paid, and expiry dates (optimized JOIN queries).
-- **Security:** Login accepts both username and email; delivery endpoints enforce role-based access control.
+- **Installation Requests:** POST /api/installation-requests - Public endpoint for hardware installation requests; GET /api/installation-requests - Admin endpoint to view all requests; PATCH /api/installation-requests/:id - Admin endpoint to update request status.
+- **Service Pricing:** GET /api/service-pricing - Public endpoint for active pricing tiers; GET /api/service-pricing/all - Admin endpoint for all pricing; POST/PATCH /api/service-pricing - Admin endpoints to manage pricing.
+- **Active Boxes:** GET /api/boxes/active - Fetch only active boxes for allocation/assignment.
+- **Security:** Login accepts both username and email; delivery endpoints enforce role-based access control; box allocation validates isActive status.
 
 ## Frontend Architecture
 - **Component Structure:** Page-based routing, role-based layouts, reusable Shadcn UI components, modal system, interactive map picker.
@@ -94,3 +98,46 @@ Preferred communication style: Simple, everyday language.
 - **WebSocket:** For real-time notifications and updates (delivery status, alerts).
 - **Authentication:** Token-based JWT authentication for connections.
 - **Events:** `notification`, `delivery_assigned`, `delivery_status_updated`, `battery_alert`, `tamper_alert`.
+
+# New Features (Latest Updates)
+
+## Multiple Accounts Per Email
+- **Change:** Removed unique constraint on email field in users table.
+- **Benefit:** Allows users to create multiple accounts (e.g., different roles) using the same email address.
+- **Implementation:** Database migration preserves existing data while removing unique constraint.
+
+## Estate Name Field
+- **Change:** Replaced `constituency` field with `estateName` in user registration.
+- **Benefit:** More accurate location specification for estate/neighborhood-based delivery.
+- **UI Update:** Registration form now includes Estate Name input instead of Constituency.
+
+## Smart Box Active Status
+- **Feature:** Added `isActive` boolean field to boxes table (default: true).
+- **Security:** Delivery assignment validates box is active before allocation.
+- **Admin Control:** Admins can deactivate boxes to prevent new deliveries (maintenance, replacement, etc.).
+- **Error Handling:** Returns clear error message if attempting to assign delivery to inactive box.
+
+## Installation Request System
+- **Public Form:** `/installation-request` route for customers to request smart box installation.
+- **Form Fields:** Customer info, installation location (with GPS coordinates via interactive map), preferred installation date, special notes.
+- **Admin Management:** Installation requests displayed in admin dashboard with status tracking.
+- **Status Workflow:** pending → contacted → scheduled → completed/cancelled.
+- **UI Component:** `InstallationRequestsManager` component in admin dashboard shows all requests with filtering and status update capabilities.
+
+## Tiered Service Pricing
+- **Service Types:** Standard (48h), Express (24h), Premium (6h same-day).
+- **Pricing Model:** Base price + per-kg weight charge for each tier.
+- **Default Pricing:**
+  - Standard: KES 200 base + KES 50/kg (48h delivery)
+  - Express: KES 500 base + KES 100/kg (24h delivery)
+  - Premium: KES 1000 base + KES 150/kg (6h delivery)
+- **Database:** `service_pricing` table with fields: serviceType, name, description, basePrice, pricePerKg, deliveryTimeHours, isActive.
+- **Admin Interface:** Service pricing management in admin dashboard.
+- **Delivery UI:** Service type selector in delivery assignment modal with real-time price calculation based on weight.
+- **Cost Display:** Shows estimated delivery cost dynamically as admin enters weight and selects service type.
+
+## Payment Structure Update
+- **Separation:** Service fees (subscription) separate from hardware fees (one-time installation).
+- **Service Fee:** Recurring subscription payment for using the smart box service.
+- **Hardware Fee:** One-time payment for smart box installation and setup.
+- **Integration:** Both tracked in payments table with appropriate categorization.
