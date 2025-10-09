@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Package, MapPin, Calendar, Phone, Mail, User, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Package, MapPin, Calendar, Phone, Mail, User, CheckCircle, XCircle, Clock, Filter } from "lucide-react";
 import { format } from "date-fns";
 
 interface InstallationRequest {
@@ -21,6 +22,8 @@ interface InstallationRequest {
   apartmentName?: string;
   latitude: string;
   longitude: string;
+  establishmentStatus: "new" | "existing";
+  establishmentType: "standalone" | "apartments" | "common_area" | "business_establishment";
   preferredDate?: string;
   notes?: string;
   status: "pending" | "contacted" | "scheduled" | "completed" | "cancelled";
@@ -30,6 +33,8 @@ interface InstallationRequest {
 export default function InstallationRequestsManager() {
   const [selectedRequest, setSelectedRequest] = useState<InstallationRequest | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [establishmentTypeFilter, setEstablishmentTypeFilter] = useState<string>("all");
   const { toast } = useToast();
 
   const { data: requestsData, isLoading } = useQuery<InstallationRequest[]>({
@@ -88,6 +93,13 @@ export default function InstallationRequestsManager() {
     );
   };
 
+  // Filter requests based on selected filters
+  const filteredRequests = requestsData?.filter((request) => {
+    const statusMatch = statusFilter === "all" || request.status === statusFilter;
+    const typeMatch = establishmentTypeFilter === "all" || request.establishmentType === establishmentTypeFilter;
+    return statusMatch && typeMatch;
+  }) || [];
+
   const pendingCount = requestsData?.filter(r => r.status === "pending").length || 0;
   const scheduledCount = requestsData?.filter(r => r.status === "scheduled").length || 0;
 
@@ -133,14 +145,54 @@ export default function InstallationRequestsManager() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Filter Controls */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-4 p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-2 flex-1">
+              <Filter className="w-4 h-4 text-muted-foreground" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]" data-testid="filter-status">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex-1">
+              <Select value={establishmentTypeFilter} onValueChange={setEstablishmentTypeFilter}>
+                <SelectTrigger className="w-full sm:w-[220px]" data-testid="filter-establishment-type">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="standalone">Stand Alone / Gated</SelectItem>
+                  <SelectItem value="apartments">Apartments</SelectItem>
+                  <SelectItem value="common_area">Common Area</SelectItem>
+                  <SelectItem value="business_establishment">Business</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {!requestsData || requestsData.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No installation requests yet</p>
             </div>
+          ) : filteredRequests.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No requests match your filters</p>
+            </div>
           ) : (
             <div className="space-y-3">
-              {requestsData.map((request) => (
+              {filteredRequests.map((request) => (
                 <div
                   key={request.id}
                   className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
@@ -149,11 +201,20 @@ export default function InstallationRequestsManager() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h3 className="font-semibold truncate">
                           {request.firstName} {request.lastName}
                         </h3>
                         {getStatusBadge(request.status)}
+                        <Badge variant="outline" className="text-xs">
+                          {request.establishmentType === "standalone" && "Stand Alone"}
+                          {request.establishmentType === "apartments" && "Apartments"}
+                          {request.establishmentType === "common_area" && "Common Area"}
+                          {request.establishmentType === "business_establishment" && "Business"}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {request.establishmentStatus === "new" ? "New" : "Existing"}
+                        </Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
@@ -252,6 +313,21 @@ export default function InstallationRequestsManager() {
                       <p className="font-medium">{selectedRequest.apartmentName}</p>
                     </div>
                   )}
+                  <div>
+                    <span className="text-muted-foreground">Establishment Status:</span>
+                    <p className="font-medium">
+                      {selectedRequest.establishmentStatus === "new" ? "New Establishment" : "Existing Establishment"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Establishment Type:</span>
+                    <p className="font-medium">
+                      {selectedRequest.establishmentType === "standalone" && "Stand Alone / Gated Community"}
+                      {selectedRequest.establishmentType === "apartments" && "Apartments"}
+                      {selectedRequest.establishmentType === "common_area" && "Common Area"}
+                      {selectedRequest.establishmentType === "business_establishment" && "Business Establishment"}
+                    </p>
+                  </div>
                   <div className="col-span-2">
                     <span className="text-muted-foreground">GPS Coordinates:</span>
                     <p className="font-medium font-mono text-xs">
