@@ -26,6 +26,7 @@ import {
   Battery,
   PackagePlus
 } from "lucide-react";
+import InstallationRequestsManager from "@/components/InstallationRequestsManager";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -684,6 +685,9 @@ export default function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Installation Requests */}
+      <InstallationRequestsManager />
 
       {/* Recent Box Activity */}
       <Card>
