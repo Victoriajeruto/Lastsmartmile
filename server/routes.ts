@@ -30,16 +30,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userData = insertUserSchema.parse(req.body);
       
-      // Check if user already exists
+      // Check if username already exists (username must be unique)
       const existingUser = await storage.getUserByUsername(userData.username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      const existingEmail = await storage.getUserByEmail(userData.email);
-      if (existingEmail) {
-        return res.status(400).json({ message: "Email already exists" });
-      }
+      // Note: Email can be shared across multiple accounts (removed duplicate email check)
 
       // Hash password
       const hashedPassword = await hashPassword(userData.password);
@@ -74,11 +71,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = loginSchema.parse(req.body);
       
-      // Find user by username or email
-      let user = await storage.getUserByUsername(username);
-      if (!user) {
-        user = await storage.getUserByEmail(username);
-      }
+      // Find user by username only (email is no longer unique, so we can't use it for login)
+      const user = await storage.getUserByUsername(username);
       
       if (!user || !user.isActive) {
         return res.status(401).json({ message: "Invalid credentials" });

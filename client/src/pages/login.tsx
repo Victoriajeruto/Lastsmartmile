@@ -193,6 +193,9 @@ export default function Login() {
                 className="h-12"
                 data-testid="input-username"
               />
+              <p className="text-xs text-muted-foreground">
+                Use your username to log in (not email)
+              </p>
             </div>
 
             <div className="space-y-2">

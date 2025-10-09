@@ -40,7 +40,7 @@ Preferred communication style: Simple, everyday language.
 - **Installation Requests:** POST /api/installation-requests - Public endpoint for hardware installation requests; GET /api/installation-requests - Admin endpoint to view all requests; PATCH /api/installation-requests/:id - Admin endpoint to update request status.
 - **Service Pricing:** GET /api/service-pricing - Public endpoint for active pricing tiers; GET /api/service-pricing/all - Admin endpoint for all pricing; POST/PATCH /api/service-pricing - Admin endpoints to manage pricing.
 - **Active Boxes:** GET /api/boxes/active - Fetch only active boxes for allocation/assignment.
-- **Security:** Login accepts both username and email; delivery endpoints enforce role-based access control; box allocation validates isActive status.
+- **Security:** Login uses username only (email no longer unique); delivery endpoints enforce role-based access control; box allocation validates isActive status.
 
 ## Frontend Architecture
 - **Component Structure:** Page-based routing, role-based layouts, reusable Shadcn UI components, modal system, interactive map picker.
