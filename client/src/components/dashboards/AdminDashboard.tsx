@@ -53,6 +53,7 @@ export default function AdminDashboard() {
     priority: "normal",
     weight: "",
     notes: "",
+    serviceType: "standard",
   });
 
   const { data: boxes, isLoading: boxesLoading } = useQuery<{ boxes: any[] }>({
@@ -80,8 +81,22 @@ export default function AdminDashboard() {
     enabled: !!authApi.getToken(),
   });
   
+  const { data: servicePricing } = useQuery<any[]>({
+    queryKey: ["/api/service-pricing"],
+  });
+  
   const residents = usersData?.users?.filter((u: any) => u.role === "resident") || [];
   const couriers = usersData?.users?.filter((u: any) => u.role === "courier") || [];
+  
+  // Calculate delivery price based on service type and weight
+  const calculateDeliveryPrice = () => {
+    if (!deliveryForm.serviceType || !servicePricing) return 0;
+    const selectedService = servicePricing.find((s: any) => s.serviceType === deliveryForm.serviceType);
+    if (!selectedService) return 0;
+    
+    const weight = parseFloat(deliveryForm.weight) || 0;
+    return selectedService.basePrice + (weight * selectedService.pricePerKg);
+  };
   
   // Box registration mutation
   const registerBoxMutation = useMutation({
@@ -134,6 +149,7 @@ export default function AdminDashboard() {
         priority: "normal",
         weight: "",
         notes: "",
+        serviceType: "standard",
       });
     },
     onError: (error: any) => {
@@ -171,6 +187,7 @@ export default function AdminDashboard() {
     }
     if (deliveryForm.weight) data.weight = deliveryForm.weight;
     if (deliveryForm.notes) data.notes = deliveryForm.notes;
+    if (deliveryForm.serviceType) data.serviceType = deliveryForm.serviceType;
     
     assignDeliveryMutation.mutate(data);
   };
@@ -895,6 +912,35 @@ export default function AdminDashboard() {
               />
             </div>
             
+            <div className="space-y-2">
+              <Label htmlFor="serviceType">Service Type *</Label>
+              <Select
+                value={deliveryForm.serviceType}
+                onValueChange={(value) => setDeliveryForm({ ...deliveryForm, serviceType: value })}
+              >
+                <SelectTrigger id="serviceType" data-testid="select-service-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {servicePricing?.map((service: any) => (
+                    <SelectItem key={service.id} value={service.serviceType}>
+                      <div className="flex flex-col">
+                        <div className="font-medium">{service.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          KES {service.basePrice} base + KES {service.pricePerKg}/kg • {service.deliveryTimeHours}h delivery
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {servicePricing && deliveryForm.serviceType && (
+                <div className="text-sm text-muted-foreground">
+                  {servicePricing.find((s: any) => s.serviceType === deliveryForm.serviceType)?.description}
+                </div>
+              )}
+            </div>
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="priority">Priority</Label>
@@ -917,6 +963,8 @@ export default function AdminDashboard() {
                 <Label htmlFor="weight">Weight (kg)</Label>
                 <Input
                   id="weight"
+                  type="number"
+                  step="0.1"
                   placeholder="2.5"
                   value={deliveryForm.weight}
                   onChange={(e) => setDeliveryForm({ ...deliveryForm, weight: e.target.value })}
@@ -924,6 +972,20 @@ export default function AdminDashboard() {
                 />
               </div>
             </div>
+            
+            {deliveryForm.weight && deliveryForm.serviceType && (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">Estimated Delivery Cost:</span>
+                  <span className="text-2xl font-bold text-primary">KES {calculateDeliveryPrice().toFixed(2)}</span>
+                </div>
+                {servicePricing && (
+                  <div className="text-xs text-muted-foreground mt-2">
+                    {servicePricing.find((s: any) => s.serviceType === deliveryForm.serviceType)?.deliveryTimeHours}h estimated delivery time
+                  </div>
+                )}
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
