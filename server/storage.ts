@@ -1,9 +1,11 @@
 import { 
   users, boxes, deliveries, unlockCodes, notifications, payments, tamperEvents,
+  installationRequests, servicePricing,
   type User, type InsertUser, type Box, type InsertBox, 
   type Delivery, type InsertDelivery, type UnlockCode, type InsertUnlockCode,
   type Notification, type InsertNotification, type Payment, type InsertPayment,
-  type TamperEvent, type InsertTamperEvent
+  type TamperEvent, type InsertTamperEvent, type InstallationRequest, type InsertInstallationRequest,
+  type ServicePricing, type InsertServicePricing
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -66,6 +68,25 @@ export interface IStorage {
   getUnresolvedTamperEvents(): Promise<TamperEvent[]>;
   createTamperEvent(tamperEvent: InsertTamperEvent): Promise<TamperEvent>;
   resolveTamperEvent(id: string, notes?: string): Promise<TamperEvent | undefined>;
+  
+  // Installation request methods
+  getInstallationRequest(id: string): Promise<InstallationRequest | undefined>;
+  getAllInstallationRequests(): Promise<InstallationRequest[]>;
+  getPendingInstallationRequests(): Promise<InstallationRequest[]>;
+  getInstallationRequestsByUserId(userId: string): Promise<InstallationRequest[]>;
+  createInstallationRequest(request: InsertInstallationRequest): Promise<InstallationRequest>;
+  updateInstallationRequest(id: string, updates: Partial<InsertInstallationRequest>): Promise<InstallationRequest | undefined>;
+  
+  // Service pricing methods
+  getServicePricing(id: string): Promise<ServicePricing | undefined>;
+  getServicePricingByType(serviceType: string): Promise<ServicePricing | undefined>;
+  getAllServicePricing(): Promise<ServicePricing[]>;
+  getActiveServicePricing(): Promise<ServicePricing[]>;
+  createServicePricing(pricing: InsertServicePricing): Promise<ServicePricing>;
+  updateServicePricing(id: string, updates: Partial<InsertServicePricing>): Promise<ServicePricing | undefined>;
+  
+  // Box methods - update to get only active boxes
+  getActiveBoxes(): Promise<Box[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -417,6 +438,93 @@ export class DatabaseStorage implements IStorage {
       .where(eq(tamperEvents.id, id))
       .returning();
     return event || undefined;
+  }
+  
+  // Installation request methods
+  async getInstallationRequest(id: string): Promise<InstallationRequest | undefined> {
+    const [request] = await db.select().from(installationRequests).where(eq(installationRequests.id, id));
+    return request || undefined;
+  }
+  
+  async getAllInstallationRequests(): Promise<InstallationRequest[]> {
+    return await db.select().from(installationRequests)
+      .orderBy(desc(installationRequests.createdAt));
+  }
+  
+  async getPendingInstallationRequests(): Promise<InstallationRequest[]> {
+    return await db.select().from(installationRequests)
+      .where(eq(installationRequests.status, "pending"))
+      .orderBy(desc(installationRequests.createdAt));
+  }
+  
+  async getInstallationRequestsByUserId(userId: string): Promise<InstallationRequest[]> {
+    return await db.select().from(installationRequests)
+      .where(eq(installationRequests.userId, userId))
+      .orderBy(desc(installationRequests.createdAt));
+  }
+  
+  async createInstallationRequest(request: InsertInstallationRequest): Promise<InstallationRequest> {
+    const [installationRequest] = await db
+      .insert(installationRequests)
+      .values(request)
+      .returning();
+    return installationRequest;
+  }
+  
+  async updateInstallationRequest(id: string, updates: Partial<InsertInstallationRequest>): Promise<InstallationRequest | undefined> {
+    const [request] = await db
+      .update(installationRequests)
+      .set({ ...updates, updatedAt: sql`CURRENT_TIMESTAMP` })
+      .where(eq(installationRequests.id, id))
+      .returning();
+    return request || undefined;
+  }
+  
+  // Service pricing methods
+  async getServicePricing(id: string): Promise<ServicePricing | undefined> {
+    const [pricing] = await db.select().from(servicePricing).where(eq(servicePricing.id, id));
+    return pricing || undefined;
+  }
+  
+  async getServicePricingByType(serviceType: string): Promise<ServicePricing | undefined> {
+    const [pricing] = await db.select().from(servicePricing)
+      .where(eq(servicePricing.serviceType, serviceType as any));
+    return pricing || undefined;
+  }
+  
+  async getAllServicePricing(): Promise<ServicePricing[]> {
+    return await db.select().from(servicePricing)
+      .orderBy(servicePricing.serviceType);
+  }
+  
+  async getActiveServicePricing(): Promise<ServicePricing[]> {
+    return await db.select().from(servicePricing)
+      .where(eq(servicePricing.isActive, true))
+      .orderBy(servicePricing.serviceType);
+  }
+  
+  async createServicePricing(pricing: InsertServicePricing): Promise<ServicePricing> {
+    const [servicePricingItem] = await db
+      .insert(servicePricing)
+      .values(pricing)
+      .returning();
+    return servicePricingItem;
+  }
+  
+  async updateServicePricing(id: string, updates: Partial<InsertServicePricing>): Promise<ServicePricing | undefined> {
+    const [pricing] = await db
+      .update(servicePricing)
+      .set({ ...updates, updatedAt: sql`CURRENT_TIMESTAMP` })
+      .where(eq(servicePricing.id, id))
+      .returning();
+    return pricing || undefined;
+  }
+  
+  // Box methods - get only active boxes
+  async getActiveBoxes(): Promise<Box[]> {
+    return await db.select().from(boxes)
+      .where(and(eq(boxes.isActive, true), eq(boxes.status, "operational")))
+      .orderBy(desc(boxes.createdAt));
   }
 }
 

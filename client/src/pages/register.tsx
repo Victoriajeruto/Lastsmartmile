@@ -25,7 +25,7 @@ export default function Register() {
     phone: "",
     role: "resident" as "resident" | "courier" | "admin",
     county: "",
-    constituency: "",
+    estateName: "",
     latitude: "",
     longitude: "",
     apartmentName: "",
@@ -327,15 +327,15 @@ export default function Register() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="constituency">Constituency</Label>
+                  <Label htmlFor="estateName">Estate Name</Label>
                   <Input
-                    id="constituency"
-                    name="constituency"
+                    id="estateName"
+                    name="estateName"
                     type="text"
-                    placeholder="e.g., Westlands"
-                    value={formData.constituency}
+                    placeholder="e.g., Westlands Estate"
+                    value={formData.estateName}
                     onChange={handleChange}
-                    data-testid="input-constituency"
+                    data-testid="input-estateName"
                   />
                 </div>
                 <div className="space-y-2">
