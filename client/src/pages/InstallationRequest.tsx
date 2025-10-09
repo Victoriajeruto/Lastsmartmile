@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Package, MapPin, Calendar, CheckCircle2 } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
@@ -23,6 +24,8 @@ export default function InstallationRequest() {
     apartmentName: "",
     latitude: "",
     longitude: "",
+    establishmentStatus: "new" as "new" | "existing",
+    establishmentType: "standalone" as "standalone" | "apartments" | "common_area" | "business_establishment",
     preferredDate: "",
     notes: "",
   });
@@ -198,6 +201,42 @@ export default function InstallationRequest() {
                       onChange={handleChange}
                       data-testid="input-apartmentName"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="establishmentStatus">Establishment Status *</Label>
+                      <Select
+                        value={formData.establishmentStatus}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, establishmentStatus: value as "new" | "existing" }))}
+                      >
+                        <SelectTrigger data-testid="select-establishmentStatus">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New Establishment</SelectItem>
+                          <SelectItem value="existing">Existing Establishment</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="establishmentType">Establishment Type *</Label>
+                      <Select
+                        value={formData.establishmentType}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, establishmentType: value as "standalone" | "apartments" | "common_area" | "business_establishment" }))}
+                      >
+                        <SelectTrigger data-testid="select-establishmentType">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="standalone">Stand Alone / Gated Community</SelectItem>
+                          <SelectItem value="apartments">Apartments</SelectItem>
+                          <SelectItem value="common_area">Common Area</SelectItem>
+                          <SelectItem value="business_establishment">Business Establishment</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <LocationPicker
