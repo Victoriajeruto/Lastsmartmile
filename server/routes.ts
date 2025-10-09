@@ -1078,6 +1078,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Installation Request routes
+  app.post("/api/installation-requests", async (req, res) => {
+    try {
+      const requestData = req.body;
+      const installationRequest = await storage.createInstallationRequest(requestData);
+      
+      // TODO: Send notification to admin about new installation request
+      res.status(201).json(installationRequest);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to create installation request" });
+    }
+  });
+  
+  app.get("/api/installation-requests", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+    try {
+      const requests = await storage.getAllInstallationRequests();
+      res.json(requests);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch installation requests" });
+    }
+  });
+  
+  app.get("/api/installation-requests/pending", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+    try {
+      const requests = await storage.getPendingInstallationRequests();
+      res.json(requests);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch pending requests" });
+    }
+  });
+  
+  app.get("/api/installation-requests/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const request = await storage.getInstallationRequest(id);
+      
+      if (!request) {
+        return res.status(404).json({ message: "Installation request not found" });
+      }
+      
+      // Only admin or the requester can view
+      if (req.user!.role !== "admin" && request.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      res.json(request);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch installation request" });
+    }
+  });
+  
+  app.patch("/api/installation-requests/:id", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const request = await storage.updateInstallationRequest(id, updates);
+      
+      if (!request) {
+        return res.status(404).json({ message: "Installation request not found" });
+      }
+      
+      res.json(request);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to update installation request" });
+    }
+  });
+  
+  // Service Pricing routes
+  app.get("/api/service-pricing", async (req, res) => {
+    try {
+      const pricing = await storage.getActiveServicePricing();
+      res.json(pricing);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch service pricing" });
+    }
+  });
+  
+  app.get("/api/service-pricing/all", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+    try {
+      const pricing = await storage.getAllServicePricing();
+      res.json(pricing);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch all service pricing" });
+    }
+  });
+  
+  app.post("/api/service-pricing", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+    try {
+      const pricingData = req.body;
+      const pricing = await storage.createServicePricing(pricingData);
+      res.status(201).json(pricing);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to create service pricing" });
+    }
+  });
+  
+  app.patch("/api/service-pricing/:id", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const pricing = await storage.updateServicePricing(id, updates);
+      
+      if (!pricing) {
+        return res.status(404).json({ message: "Service pricing not found" });
+      }
+      
+      res.json(pricing);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to update service pricing" });
+    }
+  });
+  
+  // Update box allocation to use active boxes only
+  app.get("/api/boxes/active", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const boxes = await storage.getActiveBoxes();
+      res.json(boxes);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch active boxes" });
+    }
+  });
+
   const httpServer = createServer(app);
   
   websocketService.initialize(httpServer);
