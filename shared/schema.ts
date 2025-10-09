@@ -280,6 +280,8 @@ export const insertInstallationRequestSchema = createInsertSchema(installationRe
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  preferredDate: z.coerce.date().optional(),
 });
 
 export const insertServicePricingSchema = createInsertSchema(servicePricing).omit({

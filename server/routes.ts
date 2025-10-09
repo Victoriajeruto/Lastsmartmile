@@ -20,6 +20,7 @@ import {
   loginSchema, 
   insertBoxSchema,
   insertDeliverySchema,
+  insertInstallationRequestSchema,
   type User 
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -1080,13 +1081,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Installation Request routes
   app.post("/api/installation-requests", async (req, res) => {
     try {
-      const requestData = req.body;
+      const requestData = insertInstallationRequestSchema.parse(req.body);
       const installationRequest = await storage.createInstallationRequest(requestData);
       
       // TODO: Send notification to admin about new installation request
       res.status(201).json(installationRequest);
     } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to create installation request" });
+      res.status(400).json({ message: error.message || "Failed to create installation request" });
     }
   });
   
