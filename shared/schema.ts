@@ -7,20 +7,22 @@ export const userRoleEnum = pgEnum("user_role", ["resident", "courier", "admin"]
 export const boxStatusEnum = pgEnum("box_status", ["operational", "maintenance", "offline"]);
 export const deliveryStatusEnum = pgEnum("delivery_status", ["pending", "assigned", "in_transit", "delivered", "failed"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "completed", "failed", "refunded"]);
-export const paymentTypeEnum = pgEnum("payment_type", ["subscription", "delivery_fee", "top_up"]);
+export const paymentTypeEnum = pgEnum("payment_type", ["subscription", "delivery_fee", "top_up", "hardware_fee"]);
 export const subscriptionPlanEnum = pgEnum("subscription_plan", ["monthly", "quarterly", "bi_annually", "annually"]);
+export const serviceTypeEnum = pgEnum("service_type", ["standard", "express", "premium"]);
+export const installationStatusEnum = pgEnum("installation_status", ["pending", "scheduled", "in_progress", "completed", "cancelled"]);
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
-  email: text("email").notNull().unique(),
+  email: text("email").notNull(),
   password: text("password").notNull(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   phone: text("phone").notNull(),
   role: userRoleEnum("role").notNull().default("resident"),
   county: text("county"),
-  constituency: text("constituency"),
+  estateName: text("estate_name"),
   latitude: text("latitude"),
   longitude: text("longitude"),
   apartmentName: text("apartment_name"),
@@ -41,6 +43,7 @@ export const boxes = pgTable("boxes", {
   longitude: text("longitude"),
   ownerId: varchar("owner_id").references(() => users.id),
   status: boxStatusEnum("status").notNull().default("operational"),
+  isActive: boolean("is_active").notNull().default(true),
   batteryLevel: integer("battery_level").default(100),
   lastActivity: timestamp("last_activity").default(sql`CURRENT_TIMESTAMP`),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -54,6 +57,7 @@ export const deliveries = pgTable("deliveries", {
   courierId: varchar("courier_id").references(() => users.id),
   recipientId: varchar("recipient_id").notNull().references(() => users.id),
   status: deliveryStatusEnum("status").notNull().default("pending"),
+  serviceType: serviceTypeEnum("service_type").notNull().default("standard"),
   packageType: text("package_type").notNull(),
   priority: text("priority").notNull().default("normal"),
   weight: text("weight"),
@@ -112,6 +116,42 @@ export const tamperEvents = pgTable("tamper_events", {
   notes: text("notes"),
 });
 
+export const installationRequests = pgTable("installation_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  county: text("county").notNull(),
+  estateName: text("estate_name").notNull(),
+  apartmentName: text("apartment_name"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  preferredDate: timestamp("preferred_date"),
+  status: installationStatusEnum("status").notNull().default("pending"),
+  notes: text("notes"),
+  adminNotes: text("admin_notes"),
+  assignedBoxId: varchar("assigned_box_id").references(() => boxes.id),
+  hardwareFeePaid: boolean("hardware_fee_paid").notNull().default(false),
+  hardwareFeeAmount: integer("hardware_fee_amount"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const servicePricing = pgTable("service_pricing", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceType: serviceTypeEnum("service_type").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description"),
+  basePrice: integer("base_price").notNull(),
+  pricePerKg: integer("price_per_kg"),
+  deliveryTimeHours: integer("delivery_time_hours").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   ownedBoxes: many(boxes),
@@ -120,6 +160,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   unlockCodes: many(unlockCodes),
   notifications: many(notifications),
   payments: many(payments),
+  installationRequests: many(installationRequests),
 }));
 
 export const boxesRelations = relations(boxes, ({ one, many }) => ({
@@ -181,6 +222,17 @@ export const tamperEventsRelations = relations(tamperEvents, ({ one }) => ({
   }),
 }));
 
+export const installationRequestsRelations = relations(installationRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [installationRequests.userId],
+    references: [users.id],
+  }),
+  assignedBox: one(boxes, {
+    fields: [installationRequests.assignedBoxId],
+    references: [boxes.id],
+  }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -224,6 +276,18 @@ export const insertTamperEventSchema = createInsertSchema(tamperEvents).omit({
   detectedAt: true,
 });
 
+export const insertInstallationRequestSchema = createInsertSchema(installationRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertServicePricingSchema = createInsertSchema(servicePricing).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Login schema
 export const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -245,4 +309,8 @@ export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type TamperEvent = typeof tamperEvents.$inferSelect;
 export type InsertTamperEvent = z.infer<typeof insertTamperEventSchema>;
+export type InstallationRequest = typeof installationRequests.$inferSelect;
+export type InsertInstallationRequest = z.infer<typeof insertInstallationRequestSchema>;
+export type ServicePricing = typeof servicePricing.$inferSelect;
+export type InsertServicePricing = z.infer<typeof insertServicePricingSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
