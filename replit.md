@@ -21,7 +21,7 @@ Preferred communication style: Simple, everyday language.
 ## Database Schema
 - **Core Tables:** `users` (enhanced profile, supports multiple accounts per email), `boxes` (with `isActive` status), `deliveries` (with `serviceType`), `payments` (Paystack integration), `unlock_codes`, `notifications`, `installation_requests`, `service_pricing`.
 - **Relationships:** Boxes link to users, deliveries link boxes/couriers/recipients; payments link to users; unlock codes to boxes; notifications to users; installation requests track hardware deployment.
-- **Status Enums:** User roles, box status (operational, maintenance, offline), delivery status (pending, assigned, in_transit, delivered, failed), payment status (pending, completed, failed), installation request status (pending, contacted, scheduled, completed, cancelled), service types (standard, express, premium).
+- **Status Enums:** User roles, box status (operational, maintenance, offline), delivery status (pending, assigned, in_transit, delivered, failed), payment status (pending, completed, failed), installation request status (pending, contacted, scheduled, completed, cancelled), service types (standard, express, premium), establishment status (new, existing), establishment type (standalone, apartments, common_area, business_establishment).
 - **User Registration:** Includes `county`, `estateName`, `apartmentName`, `latitude`, `longitude` for residents. Location is selected via interactive map with ~1-10 meter accuracy. Email field is non-unique to support multiple accounts per email.
 - **Box Active Status:** `isActive` boolean field prevents allocation of deactivated/inactive boxes. Only active boxes can be assigned to deliveries.
 
@@ -119,10 +119,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Installation Request System
 - **Public Form:** `/installation-request` route for customers to request smart box installation.
-- **Form Fields:** Customer info, installation location (with GPS coordinates via interactive map), preferred installation date, special notes.
-- **Admin Management:** Installation requests displayed in admin dashboard with status tracking.
+- **Form Fields:** Customer info, installation location (with GPS coordinates via interactive map), establishment categorization, preferred installation date, special notes.
+- **Establishment Categorization:**
+  - **Status:** New Establishment or Existing Establishment (default: new)
+  - **Type:** Stand Alone/Gated Community, Apartments, Common Area, or Business Establishment (default: standalone)
+  - Helps admins categorize and filter installation requests by property type
+- **Admin Management:** Installation requests displayed in admin dashboard with status tracking and filtering.
 - **Status Workflow:** pending → contacted → scheduled → completed/cancelled.
-- **UI Component:** `InstallationRequestsManager` component in admin dashboard shows all requests with filtering and status update capabilities.
+- **Filtering:** Admins can filter requests by status and establishment type for better organization.
+- **UI Component:** `InstallationRequestsManager` component in admin dashboard shows all requests with filtering, establishment badges, and status update capabilities.
 
 ## Tiered Service Pricing
 - **Service Types:** Standard (48h), Express (24h), Premium (6h same-day).
