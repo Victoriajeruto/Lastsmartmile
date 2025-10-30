@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Package, Lock, Truck, Bell, Shield, Zap, CheckCircle2 } from "lucide-react";
-import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -76,108 +75,93 @@ export default function Login() {
   ];
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Information Section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground p-12 flex-col justify-between relative overflow-hidden">
+    <div className="min-h-screen flex flex-col">
+      {/* Top Section - Information (Compact & Sticky) */}
+      <div className="sticky top-0 z-50 bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground py-6 px-6 lg:px-12 relative overflow-hidden shadow-lg">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute top-5 left-20 w-48 h-48 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute top-5 right-20 w-48 h-48 bg-white rounded-full blur-3xl"></div>
         </div>
 
-        <div className="relative z-10">
-          {/* Logo and Brand */}
-          <div className="flex items-center gap-3 mb-12">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <Package className="text-3xl" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            {/* Logo and Brand */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <Package className="text-2xl" />
+              </div>
+              <div>
+                <h1 className="font-bold text-xl">Smart P.O Box</h1>
+                <p className="text-xs opacity-90">Last Mile Postal System</p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-bold text-2xl">Smart P.O Box</h1>
-              <p className="text-sm opacity-90">Last Mile Postal System</p>
+
+            {/* Main Heading */}
+            <div className="flex-1 lg:max-w-2xl">
+              <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-2">
+                Revolutionizing Last-Mile Delivery
+              </h2>
+              <p className="text-sm lg:text-base opacity-90">
+                Secure, automated parcel delivery with smart lockboxes. Experience the future of package management.
+              </p>
             </div>
-          </div>
 
-          {/* Main Heading */}
-          <div className="mb-12">
-            <h2 className="text-4xl font-bold leading-tight mb-4">
-              Revolutionizing Last-Mile Delivery
-            </h2>
-            <p className="text-lg opacity-90 leading-relaxed">
-              Secure, automated parcel delivery with smart lockboxes. Experience the future of package management with real-time tracking, instant notifications, and unmatched security.
-            </p>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 gap-6">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className="flex items-start gap-4 p-4 rounded-xl bg-white/10 backdrop-blur-sm hover:bg-white/15 transition-all duration-300"
-                >
-                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon className="text-xl" />
+            {/* Features - Mobile (Horizontal Scroll) */}
+            <div className="sm:hidden flex gap-3 overflow-x-auto pb-2">
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 p-2 rounded-lg bg-white/10 backdrop-blur-sm whitespace-nowrap"
+                  >
+                    <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icon className="text-sm" />
+                    </div>
+                    <span className="font-semibold text-xs">{feature.title}</span>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">{feature.title}</h3>
-                    <p className="text-sm opacity-80">{feature.description}</p>
+                );
+              })}
+            </div>
+            
+            {/* Features Grid - Desktop */}
+            <div className="hidden sm:grid grid-cols-4 gap-3 lg:gap-4">
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center gap-1 p-2 lg:p-3 rounded-lg bg-white/10 backdrop-blur-sm hover:bg-white/15 transition-all duration-300 text-center"
+                    title={feature.description}
+                  >
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <Icon className="text-base" />
+                    </div>
+                    <h3 className="font-semibold text-xs">{feature.title}</h3>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Bottom Stats with Animated Counters */}
-        <div className="relative z-10 grid grid-cols-3 gap-8 pt-8 border-t border-white/20">
-          <div>
-            <div className="text-3xl font-bold mb-1">
-              <AnimatedCounter end={99.9} decimals={1} suffix="%" />
+                );
+              })}
             </div>
-            <div className="text-sm opacity-80">Uptime</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold mb-1">
-              <AnimatedCounter end={24} suffix="/7" />
-            </div>
-            <div className="text-sm opacity-80">Support</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold mb-1">
-              <AnimatedCounter end={100} suffix="%" />
-            </div>
-            <div className="text-sm opacity-80">Secure</div>
           </div>
         </div>
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
+      {/* Bottom Section - Login Form */}
+      <div className="flex-1 flex items-start justify-center pt-8 pb-6 px-6 lg:px-8 bg-background">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-              <Package className="text-primary-foreground text-2xl" />
-            </div>
-            <div>
-              <h1 className="font-bold text-xl text-foreground">Smart P.O Box</h1>
-              <p className="text-xs text-muted-foreground">Last Mile Postal System</p>
-            </div>
-          </div>
-
           {/* Form Header */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-2" data-testid="login-title">
+          <div className="mb-6">
+            <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-2" data-testid="login-title">
               Welcome Back
             </h2>
-            <p className="text-muted-foreground" data-testid="login-description">
+            <p className="text-sm text-muted-foreground" data-testid="login-description">
               Sign in to access your Smart P.O Box dashboard
             </p>
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username" className="text-sm font-medium">
                 Username
@@ -226,7 +210,7 @@ export default function Login() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-base font-medium"
+              className="w-full h-11 text-base font-medium"
               disabled={isLoading}
               data-testid="button-login"
             >
@@ -242,7 +226,7 @@ export default function Login() {
           </form>
 
           {/* Sign Up Link */}
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{" "}
               <Link href="/register">
@@ -258,7 +242,7 @@ export default function Login() {
           </div>
 
           {/* Trust Indicators */}
-          <div className="mt-12 pt-8 border-t border-border">
+          <div className="mt-6 pt-4 border-t border-border">
             <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Shield className="w-4 h-4" />
@@ -271,30 +255,6 @@ export default function Login() {
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Verified</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Stats - Only visible on mobile */}
-          <div className="lg:hidden mt-8 pt-8 border-t border-border">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  <AnimatedCounter end={99.9} decimals={1} suffix="%" />
-                </div>
-                <div className="text-xs text-muted-foreground">Uptime</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  <AnimatedCounter end={24} suffix="/7" />
-                </div>
-                <div className="text-xs text-muted-foreground">Support</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  <AnimatedCounter end={100} suffix="%" />
-                </div>
-                <div className="text-xs text-muted-foreground">Secure</div>
               </div>
             </div>
           </div>
