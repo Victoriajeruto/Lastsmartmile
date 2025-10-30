@@ -119,6 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       role: req.user.role,
       hasCompletedPayment: req.user.hasCompletedPayment || false,
       county: req.user.county,
+      estateName: req.user.estateName,
       apartmentName: req.user.apartmentName,
     });
   });

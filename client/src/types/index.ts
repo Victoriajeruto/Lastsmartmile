@@ -4,7 +4,12 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   role: "resident" | "courier" | "admin";
+  hasCompletedPayment?: boolean;
+  county?: string;
+  estateName?: string;
+  apartmentName?: string;
 }
 
 export interface Box {

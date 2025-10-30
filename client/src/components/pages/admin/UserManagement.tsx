@@ -81,7 +81,7 @@ export default function UserManagement() {
                     </span>
                     {user.county && (
                       <span className="flex items-center gap-1">
-                        {user.county}, {user.constituency}
+                        {user.county}{user.estateName ? `, ${user.estateName}` : ""}
                       </span>
                     )}
                   </div>

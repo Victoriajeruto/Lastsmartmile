@@ -18,7 +18,7 @@ export default function ResidentSettings() {
     email: user?.email || "",
     phone: user?.phone || "",
     county: user?.county || "",
-    constituency: user?.constituency || "",
+    estateName: user?.estateName || "",
     apartmentName: user?.apartmentName || "",
   });
 
@@ -107,12 +107,12 @@ export default function ResidentSettings() {
               />
             </div>
             <div>
-              <Label htmlFor="constituency">Constituency</Label>
+              <Label htmlFor="estateName">Estate Name</Label>
               <Input
-                id="constituency"
-                value={formData.constituency}
-                onChange={(e) => setFormData({ ...formData, constituency: e.target.value })}
-                data-testid="input-constituency"
+                id="estateName"
+                value={formData.estateName}
+                onChange={(e) => setFormData({ ...formData, estateName: e.target.value })}
+                data-testid="input-estate-name"
               />
             </div>
             <div className="md:col-span-2">
