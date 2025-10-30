@@ -14,6 +14,7 @@ export default function Register() {
   const { register, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -88,6 +89,34 @@ export default function Register() {
     }));
   };
 
+  const handleNext = () => {
+    if (currentStep === 1) {
+      if (!formData.firstName || !formData.lastName || !formData.username || !formData.email || !formData.phone) {
+        toast({
+          title: "Missing Information",
+          description: "Please fill in all required fields before proceeding.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    if (currentStep === 2 && formData.role === "resident") {
+      if (!formData.boxCode) {
+        toast({
+          title: "Missing Information",
+          description: "Please fill in all required fields before proceeding.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    setCurrentStep((prev) => Math.min(prev + 1, 3));
+  };
+
+  const handleBack = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
   const features = [
     {
       icon: Lock,
@@ -156,195 +185,264 @@ export default function Register() {
               Create Account
             </h2>
             <p className="text-sm text-muted-foreground" data-testid="register-description">
-              Join the Smart P.O Box system today
+              Step {currentStep} of 3 - Join the Smart P.O Box system today
             </p>
           </div>
 
-          {/* Register Form */}
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  placeholder="John"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                  data-testid="input-firstName"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Doe"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                  data-testid="input-lastName"
-                />
-              </div>
+          {/* Step Indicator */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex items-center flex-1">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                    step <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {step}
+                  </div>
+                  {step < 3 && (
+                    <div className={`flex-1 h-1 mx-2 ${
+                      step < currentStep ? 'bg-primary' : 'bg-muted'
+                    }`}></div>
+                  )}
+                </div>
+              ))}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                name="username"
-                type="text"
-                placeholder="johndoe"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                data-testid="input-username"
-              />
+            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+              <span>Basic Info</span>
+              <span>Account Details</span>
+              <span>Password</span>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="john@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                data-testid="input-email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder="+254 700 000 000"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                data-testid="input-phone"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Account Type</Label>
-              <Select value={formData.role} onValueChange={handleRoleChange}>
-                <SelectTrigger data-testid="select-role">
-                  <SelectValue placeholder="Select account type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="resident">Resident</SelectItem>
-                  <SelectItem value="courier">Courier</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          </div>
 
-            {formData.role === "resident" && (
+          {/* Register Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Step 1: Basic Info */}
+            {currentStep === 1 && (
               <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      placeholder="John"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      required
+                      data-testid="input-firstName"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      placeholder="Doe"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      required
+                      data-testid="input-lastName"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="boxCode">Smart Box Code</Label>
+                  <Label htmlFor="username">Username</Label>
                   <Input
-                    id="boxCode"
-                    name="boxCode"
+                    id="username"
+                    name="username"
                     type="text"
-                    placeholder="e.g., KB-2341"
-                    value={formData.boxCode}
+                    placeholder="johndoe"
+                    value={formData.username}
                     onChange={handleChange}
                     required
-                    data-testid="input-boxCode"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Enter the unique code on your smart box
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="county">County</Label>
-                  <Input
-                    id="county"
-                    name="county"
-                    type="text"
-                    placeholder="e.g., Nairobi"
-                    value={formData.county}
-                    onChange={handleChange}
-                    data-testid="input-county"
+                    data-testid="input-username"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="estateName">Estate Name</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="estateName"
-                    name="estateName"
-                    type="text"
-                    placeholder="e.g., Westlands Estate"
-                    value={formData.estateName}
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={formData.email}
                     onChange={handleChange}
-                    data-testid="input-estateName"
+                    required
+                    data-testid="input-email"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="apartmentName">Apartment Name</Label>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <Input
-                    id="apartmentName"
-                    name="apartmentName"
-                    type="text"
-                    placeholder="e.g., Riverside Apartments"
-                    value={formData.apartmentName}
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="+254 700 000 000"
+                    value={formData.phone}
                     onChange={handleChange}
-                    data-testid="input-apartmentName"
+                    required
+                    data-testid="input-phone"
                   />
                 </div>
-                <LocationPicker
-                  latitude={formData.latitude}
-                  longitude={formData.longitude}
-                  onLocationChange={handleLocationChange}
-                />
               </>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                data-testid="input-password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                data-testid="input-confirmPassword"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full h-11 text-base font-medium mt-2"
-              disabled={isLoading}
-              data-testid="button-register"
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                  Creating Account...
+
+            {/* Step 2: Account Details */}
+            {currentStep === 2 && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Account Type</Label>
+                  <Select value={formData.role} onValueChange={handleRoleChange}>
+                    <SelectTrigger data-testid="select-role">
+                      <SelectValue placeholder="Select account type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="resident">Resident</SelectItem>
+                      <SelectItem value="courier">Courier</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              ) : (
-                "Create Account"
+
+                {formData.role === "resident" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="boxCode">Smart Box Code</Label>
+                      <Input
+                        id="boxCode"
+                        name="boxCode"
+                        type="text"
+                        placeholder="e.g., KB-2341"
+                        value={formData.boxCode}
+                        onChange={handleChange}
+                        required
+                        data-testid="input-boxCode"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the unique code on your smart box
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="county">County</Label>
+                      <Input
+                        id="county"
+                        name="county"
+                        type="text"
+                        placeholder="e.g., Nairobi"
+                        value={formData.county}
+                        onChange={handleChange}
+                        data-testid="input-county"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="estateName">Estate Name</Label>
+                      <Input
+                        id="estateName"
+                        name="estateName"
+                        type="text"
+                        placeholder="e.g., Westlands Estate"
+                        value={formData.estateName}
+                        onChange={handleChange}
+                        data-testid="input-estateName"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="apartmentName">Apartment Name</Label>
+                      <Input
+                        id="apartmentName"
+                        name="apartmentName"
+                        type="text"
+                        placeholder="e.g., Riverside Apartments"
+                        value={formData.apartmentName}
+                        onChange={handleChange}
+                        data-testid="input-apartmentName"
+                      />
+                    </div>
+                    <LocationPicker
+                      latitude={formData.latitude}
+                      longitude={formData.longitude}
+                      onLocationChange={handleLocationChange}
+                    />
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Step 3: Password */}
+            {currentStep === 3 && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    data-testid="input-password"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    data-testid="input-confirmPassword"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex gap-3 pt-4">
+              {currentStep > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  className="flex-1 h-11 text-base font-medium"
+                  data-testid="button-back"
+                >
+                  Back
+                </Button>
               )}
-            </Button>
+              
+              {currentStep < 3 ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className="flex-1 h-11 text-base font-medium"
+                  data-testid="button-next"
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  className="flex-1 h-11 text-base font-medium"
+                  disabled={isLoading}
+                  data-testid="button-register"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                      Creating Account...
+                    </div>
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
+              )}
+            </div>
           </form>
 
           {/* Sign In Link */}
