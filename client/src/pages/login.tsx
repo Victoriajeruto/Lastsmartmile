@@ -93,7 +93,7 @@ export default function Login() {
               </div>
               <div className="text-left">
                 <h1 className="font-bold text-2xl tracking-tight">Last Smart Mile</h1>
-                <p className="text-sm opacity-90">Postal Delivery System</p>
+                <p className="text-sm opacity-90">Smart Postal Delivery System</p>
               </div>
             </div>
 
