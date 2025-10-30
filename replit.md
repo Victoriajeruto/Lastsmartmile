@@ -74,11 +74,17 @@ Preferred communication style: Simple, everyday language.
 - **State Management:** AuthContext for global auth, React Query for server state, local state for UI.
 - **Routing:** Protected routes, loading states, redirects, role-specific views.
 - **Location Selection:** Interactive map-based location picker using Leaflet with OpenStreetMap tiles. Users can click or drag markers to pin their exact location with 7 decimal place precision (~1-10 meter accuracy). Includes "Use My Location" button for GPS positioning.
-- **Multi-Step Registration:** Registration form split into 3 steps for better UX:
-  - Step 1 (Basic Info): Name, username, email, phone number
-  - Step 2 (Account Details): Role selection, box code (residents), county, estate name, apartment name, location picker
-  - Step 3 (Password): Password and confirmation
-  - Features: Visual step indicators, Next/Back navigation, form data persistence across steps, field validation at each step
+- **Multi-Step Registration:** Registration form with dynamic steps based on user role for better UX:
+  - **Residents (4 Steps):**
+    - Step 1 (Basic Info): Name, username, email, phone number
+    - Step 2 (Account Details): Role selection, box code, county, estate name, apartment name
+    - Step 3 (Location): Interactive map picker for exact location selection
+    - Step 4 (Password): Password and confirmation
+  - **Non-Residents (3 Steps - Couriers/Admins):**
+    - Step 1 (Basic Info): Name, username, email, phone number
+    - Step 2 (Account Type): Role selection only
+    - Step 3 (Password): Password and confirmation (location step automatically skipped)
+  - **Features:** Dynamic step indicators that adjust to role (3 or 4 steps), Next/Back navigation with smart skip logic, form data persistence across steps, field validation at each step, role-based step labels
 
 ## Build & Deployment
 - **Development:** TSX, Vite HMR, Replit plugins.
