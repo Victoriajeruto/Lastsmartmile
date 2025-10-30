@@ -113,79 +113,42 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top Section - Information (Compact & Sticky) */}
-      <div className="sticky top-0 z-50 bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground py-6 px-6 lg:px-12 relative overflow-hidden shadow-lg">
+      {/* Top Section - Hero Header with Teal Background */}
+      <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground py-10 px-6 lg:py-12 lg:px-12 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-5 left-20 w-48 h-48 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute top-5 right-20 w-48 h-48 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute top-10 left-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute top-10 right-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            {/* Logo and Brand */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <Package className="text-2xl" />
+          <div className="text-center">
+            {/* Logo and Brand - Centered */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl">
+                <Package className="text-3xl" />
               </div>
-              <div>
-                <h1 className="font-bold text-xl">Smart P.O Box</h1>
-                <p className="text-xs opacity-90">Last Mile Postal System</p>
+              <div className="text-left">
+                <h1 className="font-bold text-2xl tracking-tight">Smart P.O Box</h1>
+                <p className="text-sm opacity-90">Last Mile Postal System</p>
               </div>
             </div>
 
-            {/* Main Heading */}
-            <div className="flex-1 lg:max-w-2xl">
-              <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-2">
+            {/* Main Heading - Centered */}
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl lg:text-4xl font-bold leading-tight mb-3">
                 Revolutionizing Last-Mile Delivery
               </h2>
-              <p className="text-sm lg:text-base opacity-90">
+              <p className="text-base lg:text-lg opacity-90 max-w-2xl mx-auto">
                 Secure, automated parcel delivery with smart lockboxes. Experience the future of package management.
               </p>
-            </div>
-
-            {/* Features - Mobile (Horizontal Scroll) */}
-            <div className="sm:hidden flex gap-3 overflow-x-auto pb-2">
-              {features.map((feature, index) => {
-                const Icon = feature.icon;
-                return (
-                  <div
-                    key={index}
-                    className="flex items-center gap-2 p-2 rounded-lg bg-white/10 backdrop-blur-sm whitespace-nowrap"
-                  >
-                    <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Icon className="text-sm" />
-                    </div>
-                    <span className="font-semibold text-xs">{feature.title}</span>
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* Features Grid - Desktop */}
-            <div className="hidden sm:grid grid-cols-4 gap-3 lg:gap-4">
-              {features.map((feature, index) => {
-                const Icon = feature.icon;
-                return (
-                  <div
-                    key={index}
-                    className="flex flex-col items-center gap-1 p-2 lg:p-3 rounded-lg bg-white/10 backdrop-blur-sm hover:bg-white/15 transition-all duration-300 text-center"
-                    title={feature.description}
-                  >
-                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                      <Icon className="text-base" />
-                    </div>
-                    <h3 className="font-semibold text-xs">{feature.title}</h3>
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Section - Register Form */}
-      <div className="flex-1 flex items-start justify-center pt-8 pb-6 px-6 lg:px-8 bg-background">
+      {/* Middle Section - Register Form */}
+      <div className="flex-1 flex items-start justify-center py-8 px-6 lg:px-8 bg-background">
         <div className="w-full max-w-md py-6">
           {/* Form Header */}
           <div className="mb-6">
@@ -416,6 +379,54 @@ export default function Register() {
                 <span>Verified</span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Section - Features with Teal Background */}
+      <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground py-8 px-6 lg:px-12 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute bottom-5 left-20 w-48 h-48 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-5 right-20 w-48 h-48 bg-white rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Features - Mobile (Horizontal Scroll) */}
+          <div className="sm:hidden flex gap-3 overflow-x-auto pb-2">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 p-3 rounded-lg bg-white/10 backdrop-blur-sm whitespace-nowrap"
+                >
+                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon className="text-base" />
+                  </div>
+                  <span className="font-semibold text-sm">{feature.title}</span>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Features Grid - Desktop */}
+          <div className="hidden sm:grid grid-cols-4 gap-4 lg:gap-6">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col items-center gap-2 p-4 lg:p-5 rounded-lg bg-white/10 backdrop-blur-sm hover:bg-white/15 transition-all duration-300 text-center"
+                  title={feature.description}
+                >
+                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                    <Icon className="text-xl" />
+                  </div>
+                  <h3 className="font-semibold text-sm">{feature.title}</h3>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
