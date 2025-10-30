@@ -32,6 +32,10 @@ export default function Register() {
     boxCode: "",
   });
 
+  // Residents have 4 steps, non-residents have 3 (skip location)
+  const totalSteps = formData.role === "resident" ? 4 : 3;
+  const displayStep = formData.role === "resident" ? currentStep : (currentStep === 4 ? 3 : currentStep);
+
   if (isAuthenticated) {
     setLocation("/");
     return null;
@@ -110,11 +114,22 @@ export default function Register() {
         return;
       }
     }
-    setCurrentStep((prev) => Math.min(prev + 1, 3));
+    
+    // Skip step 3 (location) for non-residents
+    if (currentStep === 2 && formData.role !== "resident") {
+      setCurrentStep(4); // Skip directly to password
+    } else {
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+    }
   };
 
   const handleBack = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
+    // Skip step 3 (location) for non-residents when going back from step 4
+    if (currentStep === 4 && formData.role !== "resident") {
+      setCurrentStep(2);
+    } else {
+      setCurrentStep((prev) => Math.max(prev - 1, 1));
+    }
   };
 
   const features = [
@@ -185,33 +200,64 @@ export default function Register() {
               Create Account
             </h2>
             <p className="text-sm text-muted-foreground" data-testid="register-description">
-              Step {currentStep} of 3 - Join the Smart P.O Box system today
+              Step {displayStep} of {totalSteps} - Join the Smart P.O Box system today
             </p>
           </div>
 
-          {/* Step Indicator */}
+          {/* Step Indicator - Dynamic based on role */}
           <div className="mb-6">
-            <div className="flex items-center justify-between">
-              {[1, 2, 3].map((step) => (
-                <div key={step} className="flex items-center flex-1">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                    step <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {step}
-                  </div>
-                  {step < 3 && (
-                    <div className={`flex-1 h-1 mx-2 ${
-                      step < currentStep ? 'bg-primary' : 'bg-muted'
-                    }`}></div>
-                  )}
+            {formData.role === "resident" ? (
+              // 4-step indicator for residents
+              <>
+                <div className="flex items-center justify-between">
+                  {[1, 2, 3, 4].map((step) => (
+                    <div key={step} className="flex items-center flex-1">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm ${
+                        step <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {step}
+                      </div>
+                      {step < 4 && (
+                        <div className={`flex-1 h-1 mx-1 ${
+                          step < currentStep ? 'bg-primary' : 'bg-muted'
+                        }`}></div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-              <span>Basic Info</span>
-              <span>Account Details</span>
-              <span>Password</span>
-            </div>
+                <div className="grid grid-cols-4 gap-1 mt-2 text-xs text-muted-foreground text-center">
+                  <span>Basic Info</span>
+                  <span>Account</span>
+                  <span>Location</span>
+                  <span>Password</span>
+                </div>
+              </>
+            ) : (
+              // 3-step indicator for non-residents
+              <>
+                <div className="flex items-center justify-between">
+                  {[1, 2, 3].map((step) => (
+                    <div key={step} className="flex items-center flex-1">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                        step <= displayStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {step}
+                      </div>
+                      {step < 3 && (
+                        <div className={`flex-1 h-1 mx-2 ${
+                          step < displayStep ? 'bg-primary' : 'bg-muted'
+                        }`}></div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                  <span>Basic Info</span>
+                  <span>Account</span>
+                  <span>Password</span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Register Form */}
@@ -360,18 +406,30 @@ export default function Register() {
                         data-testid="input-apartmentName"
                       />
                     </div>
-                    <LocationPicker
-                      latitude={formData.latitude}
-                      longitude={formData.longitude}
-                      onLocationChange={handleLocationChange}
-                    />
                   </>
                 )}
               </>
             )}
 
-            {/* Step 3: Password */}
-            {currentStep === 3 && (
+            {/* Step 3: Location */}
+            {currentStep === 3 && formData.role === "resident" && (
+              <>
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Select Your Location</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Pin your exact location on the map for accurate delivery
+                  </p>
+                </div>
+                <LocationPicker
+                  latitude={formData.latitude}
+                  longitude={formData.longitude}
+                  onLocationChange={handleLocationChange}
+                />
+              </>
+            )}
+
+            {/* Step 4: Password */}
+            {currentStep === 4 && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
@@ -416,7 +474,7 @@ export default function Register() {
                 </Button>
               )}
               
-              {currentStep < 3 ? (
+              {currentStep < totalSteps ? (
                 <Button
                   type="button"
                   onClick={handleNext}
