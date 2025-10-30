@@ -7,6 +7,13 @@ import type { Request, Response, NextFunction } from "express";
 const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || "fallback-secret-key";
 const SALT_ROUNDS = 10;
 
+// Security warning for production environments
+if (JWT_SECRET === "fallback-secret-key") {
+  console.error("⚠️  SECURITY WARNING: Using fallback JWT secret key!");
+  console.error("   Please set JWT_SECRET or SESSION_SECRET environment variable.");
+  console.error("   This is a critical security risk in production environments.");
+}
+
 export interface AuthenticatedRequest extends Request {
   user?: User;
 }

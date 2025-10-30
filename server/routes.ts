@@ -891,6 +891,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("💳 Paystack Webhook Received:", JSON.stringify(req.body, null, 2));
       
+      // Verify webhook signature for security
+      const signature = req.headers['x-paystack-signature'] as string;
+      const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
+      
+      if (paystackSecret) {
+        // If secret is configured, signature verification is required
+        if (!signature) {
+          console.error('❌ Missing Paystack webhook signature');
+          return res.status(401).json({ message: 'Missing signature' });
+        }
+        
+        const crypto = await import('crypto');
+        // Use raw body (original bytes) for signature verification
+        const rawBody = req.rawBody as Buffer;
+        const hash = crypto.createHmac('sha512', paystackSecret)
+          .update(rawBody)
+          .digest('hex');
+        
+        if (hash !== signature) {
+          console.error('❌ Invalid Paystack webhook signature');
+          return res.status(401).json({ message: 'Invalid signature' });
+        }
+        console.log('✅ Paystack webhook signature verified');
+      }
+      
       const event = req.body;
       
       if (event.event === "charge.success") {
