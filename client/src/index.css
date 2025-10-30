@@ -141,15 +141,6 @@
   .nav-item {
     @apply transition-all duration-200;
   }
-
-  .nav-item.active {
-    background-color: hsl(var(--primary) / 0.1);
-    @apply text-primary font-medium;
-  }
-
-  .nav-item:not(.active):hover {
-    @apply bg-muted text-foreground;
-  }
 }
 
 @layer utilities {
