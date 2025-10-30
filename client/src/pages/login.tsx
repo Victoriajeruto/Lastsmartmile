@@ -76,27 +76,33 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top Section - Hero Text */}
-      <div className="py-8 px-6 lg:px-12 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-            {/* Logo and Brand */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                <Package className="text-2xl text-primary" />
+      {/* Top Section - Hero Header with Teal Background */}
+      <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground py-10 px-6 lg:py-12 lg:px-12 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute top-10 right-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center">
+            {/* Logo and Brand - Centered */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl">
+                <Package className="text-3xl" />
               </div>
-              <div>
-                <h1 className="font-bold text-xl text-foreground">Smart P.O Box</h1>
-                <p className="text-xs text-muted-foreground">Last Mile Postal System</p>
+              <div className="text-left">
+                <h1 className="font-bold text-2xl tracking-tight">Smart P.O Box</h1>
+                <p className="text-sm opacity-90">Last Mile Postal System</p>
               </div>
             </div>
 
-            {/* Main Heading */}
-            <div className="flex-1 lg:max-w-2xl">
-              <h2 className="text-2xl lg:text-3xl font-bold leading-tight mb-2 text-foreground">
+            {/* Main Heading - Centered */}
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl lg:text-4xl font-bold leading-tight mb-3">
                 Revolutionizing Last-Mile Delivery
               </h2>
-              <p className="text-sm lg:text-base text-muted-foreground">
+              <p className="text-base lg:text-lg opacity-90 max-w-2xl mx-auto">
                 Secure, automated parcel delivery with smart lockboxes. Experience the future of package management.
               </p>
             </div>
