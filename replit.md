@@ -21,6 +21,10 @@ Preferred communication style: Simple, everyday language.
 - **TopBar:** Clean header with solid teal accents, prominent Quick Unlock CTA button with solid teal background
 - **Main Content:** Max-width container (1800px) with solid background, smooth fade-in animations
 - **Responsive Design:** Mobile-friendly with proper spacing and touch targets
+- **Auth Pages (Login/Register):** Horizontal layout with three sections:
+  - Top: Centered teal blue header with logo, "Revolutionizing Last-Mile Delivery" heading, and decorative blur patterns
+  - Middle: Clean white form section with step indicators (register) or login fields
+  - Bottom: Teal features section displaying 4 key benefits (Secure Smart Lockboxes, Real-Time Tracking, Instant Notifications, 24/7 Monitoring)
 
 ## Visual Enhancements
 - **Solid Colors:** Consistent solid teal colors used for buttons, badges, and active states for a clean, modern look
@@ -70,6 +74,11 @@ Preferred communication style: Simple, everyday language.
 - **State Management:** AuthContext for global auth, React Query for server state, local state for UI.
 - **Routing:** Protected routes, loading states, redirects, role-specific views.
 - **Location Selection:** Interactive map-based location picker using Leaflet with OpenStreetMap tiles. Users can click or drag markers to pin their exact location with 7 decimal place precision (~1-10 meter accuracy). Includes "Use My Location" button for GPS positioning.
+- **Multi-Step Registration:** Registration form split into 3 steps for better UX:
+  - Step 1 (Basic Info): Name, username, email, phone number
+  - Step 2 (Account Details): Role selection, box code (residents), county, estate name, apartment name, location picker
+  - Step 3 (Password): Password and confirmation
+  - Features: Visual step indicators, Next/Back navigation, form data persistence across steps, field validation at each step
 
 ## Build & Deployment
 - **Development:** TSX, Vite HMR, Replit plugins.
