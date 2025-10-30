@@ -76,9 +76,9 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
     <aside className="w-72 bg-sidebar border-r border-sidebar-border flex-shrink-0 shadow-xl" data-testid="sidebar">
       <div className="h-full flex flex-col">
         {/* Logo/Brand */}
-        <div className="p-6 border-b border-sidebar-border bg-gradient-to-br from-sidebar to-sidebar/80">
+        <div className="p-6 border-b border-sidebar-border bg-sidebar">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-sidebar-primary to-sidebar-accent rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-sidebar-primary rounded-xl flex items-center justify-center shadow-lg">
               <Package className="text-sidebar-primary-foreground text-2xl" />
             </div>
             <div>
@@ -112,15 +112,15 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
                 onClick={() => handleNavClick(item)}
                 className={`nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-200 ${
                   isActive(item)
-                    ? "bg-gradient-to-r from-sidebar-primary to-sidebar-accent text-sidebar-primary-foreground font-semibold shadow-lg scale-105"
-                    : "hover:bg-sidebar-border/50 text-sidebar-foreground/90 hover:text-sidebar-foreground hover:scale-102"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-lg"
+                    : "hover:bg-sidebar-border/50 text-sidebar-foreground/90 hover:text-sidebar-foreground"
                 }`}
                 data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="flex-1">{item.label}</span>
                 {item.badge && (
-                  <span className="ml-auto bg-gradient-to-r from-destructive to-destructive/80 text-destructive-foreground text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
+                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
                     {item.badge}
                   </span>
                 )}
@@ -132,7 +132,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
         {/* User Profile */}
         <div className="p-4 border-t border-sidebar-border bg-sidebar-border/20">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-sidebar-primary via-sidebar-accent to-sidebar-primary rounded-full flex items-center justify-center text-sidebar-primary-foreground font-bold text-base shadow-lg ring-2 ring-sidebar-primary/30">
+            <div className="w-12 h-12 bg-sidebar-primary rounded-full flex items-center justify-center text-sidebar-primary-foreground font-bold text-base shadow-lg ring-2 ring-sidebar-primary/30">
               <span data-testid="user-initials">{getUserInitials()}</span>
             </div>
             <div className="flex-1 min-w-0">

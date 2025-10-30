@@ -188,7 +188,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/5" data-testid="layout-container">
+    <div className="flex h-screen overflow-hidden bg-background" data-testid="layout-container">
       <Sidebar 
         currentView={currentView} 
         onViewChange={handleViewChange}
