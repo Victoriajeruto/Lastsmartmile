@@ -158,7 +158,7 @@ export default function Register() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top Section - Hero Header with Teal Background */}
-      <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground py-10 px-6 lg:py-12 lg:px-12 relative overflow-hidden">
+      <div className="bg-primary text-primary-foreground py-10 px-6 lg:py-12 lg:px-12 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
@@ -540,7 +540,7 @@ export default function Register() {
       </div>
 
       {/* Bottom Section - Features with Teal Background */}
-      <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground py-8 px-6 lg:px-12 relative overflow-hidden">
+      <div className="bg-primary text-primary-foreground py-8 px-6 lg:px-12 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute bottom-5 left-20 w-48 h-48 bg-white rounded-full blur-3xl"></div>
