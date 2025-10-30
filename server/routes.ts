@@ -119,7 +119,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       role: req.user.role,
       hasCompletedPayment: req.user.hasCompletedPayment || false,
       county: req.user.county,
-      constituency: req.user.constituency,
       apartmentName: req.user.apartmentName,
     });
   });
@@ -1091,7 +1090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get("/api/installation-requests", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+  app.get("/api/installation-requests", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
     try {
       const requests = await storage.getAllInstallationRequests();
       res.json(requests);
@@ -1100,7 +1099,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get("/api/installation-requests/pending", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+  app.get("/api/installation-requests/pending", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
     try {
       const requests = await storage.getPendingInstallationRequests();
       res.json(requests);
@@ -1129,7 +1128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.patch("/api/installation-requests/:id", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+  app.patch("/api/installation-requests/:id", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -1155,7 +1154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get("/api/service-pricing/all", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+  app.get("/api/service-pricing/all", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
     try {
       const pricing = await storage.getAllServicePricing();
       res.json(pricing);
@@ -1164,7 +1163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/service-pricing", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/service-pricing", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
     try {
       const pricingData = req.body;
       const pricing = await storage.createServicePricing(pricingData);
@@ -1174,7 +1173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.patch("/api/service-pricing/:id", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res) => {
+  app.patch("/api/service-pricing/:id", requireAuth, requireRole(["admin"]), async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
