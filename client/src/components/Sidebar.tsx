@@ -83,16 +83,16 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
             </div>
             <div>
               <h1 className="font-bold text-xl text-sidebar-foreground">Smart P.O Box</h1>
-              <p className="text-xs text-sidebar-foreground/70">Last Mile Postal System</p>
+              <p className="text-xs text-sidebar-foreground">Last Mile Postal System</p>
             </div>
           </div>
         </div>
 
         {/* Role Switcher (Demo) */}
-        <div className="p-4 border-b border-sidebar-border bg-sidebar-border/30">
-          <label className="text-xs font-semibold text-sidebar-foreground/70 mb-2 block uppercase tracking-wider">View As:</label>
+        <div className="p-4 border-b border-sidebar-border bg-sidebar">
+          <label className="text-xs font-semibold text-sidebar-foreground mb-2 block uppercase tracking-wider">View As:</label>
           <Select value={currentView} onValueChange={onViewChange}>
-            <SelectTrigger className="w-full bg-sidebar-border/50 border-sidebar-primary/30 text-sidebar-foreground hover:border-sidebar-primary transition-colors" data-testid="role-switcher">
+            <SelectTrigger className="w-full bg-sidebar-border border-sidebar-primary text-sidebar-foreground hover:border-sidebar-primary transition-colors" data-testid="role-switcher">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -113,7 +113,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
                 className={`nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-200 ${
                   isActive(item)
                     ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-lg"
-                    : "hover:bg-sidebar-border/50 text-sidebar-foreground/90 hover:text-sidebar-foreground"
+                    : "hover:bg-sidebar-border text-sidebar-foreground hover:text-sidebar-foreground"
                 }`}
                 data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
               >
@@ -130,16 +130,16 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
         </nav>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-sidebar-border bg-sidebar-border/20">
+        <div className="p-4 border-t border-sidebar-border bg-sidebar">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-sidebar-primary rounded-full flex items-center justify-center text-sidebar-primary-foreground font-bold text-base shadow-lg ring-2 ring-sidebar-primary/30">
+            <div className="w-12 h-12 bg-sidebar-primary rounded-full flex items-center justify-center text-sidebar-primary-foreground font-bold text-base shadow-lg ring-2 ring-sidebar-primary">
               <span data-testid="user-initials">{getUserInitials()}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-sidebar-foreground truncate" data-testid="user-name">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-xs text-sidebar-foreground/60 truncate" data-testid="user-email">
+              <p className="text-xs text-sidebar-foreground truncate" data-testid="user-email">
                 {user?.email}
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="text-sidebar-foreground/70 hover:text-sidebar-primary hover:bg-sidebar-border/50 p-2 rounded-lg transition-all"
+              className="text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-border p-2 rounded-lg transition-all"
               data-testid="button-logout"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
