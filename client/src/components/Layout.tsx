@@ -188,7 +188,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden" data-testid="layout-container">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-background via-background to-primary/5" data-testid="layout-container">
       <Sidebar 
         currentView={currentView} 
         onViewChange={handleViewChange}
@@ -201,8 +201,10 @@ export default function Layout() {
           subtitle={getPageSubtitle()}
           onOpenUnlockModal={() => setIsUnlockModalOpen(true)}
         />
-        <div className="p-8">
-          {renderContent()}
+        <div className="p-8 max-w-[1800px] mx-auto">
+          <div className="animate-slide-in">
+            {renderContent()}
+          </div>
         </div>
       </main>
       

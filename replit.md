@@ -6,6 +6,29 @@ The **Last Mile Postal System** is a smart parcel delivery system designed to au
 
 Preferred communication style: Simple, everyday language.
 
+# UI/UX Design
+
+## Color Scheme
+- **Primary Theme:** Teal Blue - Modern, professional color palette with excellent accessibility
+- **Primary Color:** hsl(190, 85%, 36%) - Vibrant teal for primary actions and branding
+- **Secondary Color:** hsl(184, 60%, 48%) - Lighter teal for secondary elements
+- **Accent Color:** hsl(176, 75%, 45%) - Bright teal for highlights and interactive elements
+- **Charts:** Coordinated teal palette (5 shades) for data visualization
+- **Dark Mode:** Deep teal backgrounds (hsl(192, 50%, 8%)) with light teal accents
+
+## Layout & Navigation
+- **Sidebar:** Dark teal sidebar (72px width) with gradient branding, active state indicators with teal gradient backgrounds
+- **TopBar:** Gradient header with teal accents, animated pulse indicators, prominent Quick Unlock CTA button
+- **Main Content:** Max-width container (1800px) with subtle background gradient, smooth fade-in animations
+- **Responsive Design:** Mobile-friendly with proper spacing and touch targets
+
+## Visual Enhancements
+- **Gradients:** Teal gradients used for buttons, badges, and active states to create depth
+- **Shadows:** Strategic use of shadows (xl shadows on buttons and cards) for visual hierarchy
+- **Animations:** Smooth transitions, hover effects (scale transforms), pulse animations for notifications
+- **Border Radius:** Rounded corners (xl radius) for modern, friendly appearance
+- **Typography:** Bold headings with tight tracking, clear visual hierarchy
+
 # System Architecture
 
 ## Technology Stack

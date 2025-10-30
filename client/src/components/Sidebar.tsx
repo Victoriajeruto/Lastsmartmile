@@ -73,26 +73,26 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
   };
 
   return (
-    <aside className="w-64 bg-card border-r border-border flex-shrink-0" data-testid="sidebar">
+    <aside className="w-72 bg-sidebar border-r border-sidebar-border flex-shrink-0 shadow-xl" data-testid="sidebar">
       <div className="h-full flex flex-col">
         {/* Logo/Brand */}
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-sidebar-border bg-gradient-to-br from-sidebar to-sidebar/80">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Package className="text-primary-foreground text-xl" />
+            <div className="w-12 h-12 bg-gradient-to-br from-sidebar-primary to-sidebar-accent rounded-xl flex items-center justify-center shadow-lg">
+              <Package className="text-sidebar-primary-foreground text-2xl" />
             </div>
             <div>
-              <h1 className="font-bold text-lg text-foreground">Smart P.O Box</h1>
-              <p className="text-xs text-muted-foreground">Last Mile Postal System</p>
+              <h1 className="font-bold text-xl text-sidebar-foreground">Smart P.O Box</h1>
+              <p className="text-xs text-sidebar-foreground/70">Last Mile Postal System</p>
             </div>
           </div>
         </div>
 
         {/* Role Switcher (Demo) */}
-        <div className="p-4 border-b border-border bg-muted/50">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">VIEW AS:</label>
+        <div className="p-4 border-b border-sidebar-border bg-sidebar-border/30">
+          <label className="text-xs font-semibold text-sidebar-foreground/70 mb-2 block uppercase tracking-wider">View As:</label>
           <Select value={currentView} onValueChange={onViewChange}>
-            <SelectTrigger className="w-full" data-testid="role-switcher">
+            <SelectTrigger className="w-full bg-sidebar-border/50 border-sidebar-primary/30 text-sidebar-foreground hover:border-sidebar-primary transition-colors" data-testid="role-switcher">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -105,22 +105,22 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-4">
-          <div className="space-y-1">
+          <div className="space-y-2">
             {getNavItems().map((item, index) => (
               <button
                 key={index}
                 onClick={() => handleNavClick(item)}
-                className={`nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                className={`nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-200 ${
                   isActive(item)
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "hover:bg-muted text-foreground"
+                    ? "bg-gradient-to-r from-sidebar-primary to-sidebar-accent text-sidebar-primary-foreground font-semibold shadow-lg scale-105"
+                    : "hover:bg-sidebar-border/50 text-sidebar-foreground/90 hover:text-sidebar-foreground hover:scale-102"
                 }`}
                 data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="flex-1">{item.label}</span>
                 {item.badge && (
-                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs px-2 py-0.5 rounded-full">
+                  <span className="ml-auto bg-gradient-to-r from-destructive to-destructive/80 text-destructive-foreground text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
                     {item.badge}
                   </span>
                 )}
@@ -130,16 +130,16 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
         </nav>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-sidebar-border bg-sidebar-border/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold">
+            <div className="w-12 h-12 bg-gradient-to-br from-sidebar-primary via-sidebar-accent to-sidebar-primary rounded-full flex items-center justify-center text-sidebar-primary-foreground font-bold text-base shadow-lg ring-2 ring-sidebar-primary/30">
               <span data-testid="user-initials">{getUserInitials()}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm text-foreground truncate" data-testid="user-name">
+              <p className="font-semibold text-sm text-sidebar-foreground truncate" data-testid="user-name">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-xs text-muted-foreground truncate" data-testid="user-email">
+              <p className="text-xs text-sidebar-foreground/60 truncate" data-testid="user-email">
                 {user?.email}
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="text-muted-foreground hover:text-foreground p-2"
+              className="text-sidebar-foreground/70 hover:text-sidebar-primary hover:bg-sidebar-border/50 p-2 rounded-lg transition-all"
               data-testid="button-logout"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
