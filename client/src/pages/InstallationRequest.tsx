@@ -293,7 +293,7 @@ export default function InstallationRequest() {
                   <li>• Our team will contact you to confirm installation details</li>
                   <li>• Hardware fee payment will be processed before installation</li>
                   <li>• Professional installation at your chosen location</li>
-                  <li>• Account setup and training on how to use your Smart P.O Box</li>
+                  <li>• Account setup and training on how to use your Last Smart Mile</li>
                 </ul>
               </div>
 

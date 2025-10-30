@@ -79,7 +79,7 @@ export class NotificationService {
     await this.createNotification({
       userId,
       title: "Security Alert - Tamper Detected",
-      message: `Tampering detected on your Smart P.O Box ${boxId}. Please check your box immediately and contact support if needed.`,
+      message: `Tampering detected on your Last Smart Mile box ${boxId}. Please check your box immediately and contact support if needed.`,
       type: "security_alert"
     });
     

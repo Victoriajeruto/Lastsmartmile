@@ -82,8 +82,8 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
               <Package className="text-sidebar-primary-foreground text-2xl" />
             </div>
             <div>
-              <h1 className="font-bold text-xl text-sidebar-foreground">Smart P.O Box</h1>
-              <p className="text-xs text-sidebar-foreground">Last Mile Postal System</p>
+              <h1 className="font-bold text-xl text-sidebar-foreground">Last Smart Mile</h1>
+              <p className="text-xs text-sidebar-foreground">Postal Delivery System</p>
             </div>
           </div>
         </div>

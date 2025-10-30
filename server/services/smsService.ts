@@ -87,7 +87,7 @@ class SMSService {
   }
 
   async sendDeliveryAssignedNotification(phone: string, trackingNumber: string, boxId: string): Promise<boolean> {
-    const message = `Your package (${trackingNumber}) has been assigned to Smart P.O Box ${boxId}. You will be notified when it arrives.`;
+    const message = `Your package (${trackingNumber}) has been assigned to Last Smart Mile box ${boxId}. You will be notified when it arrives.`;
     return this.sendSMS(phone, message);
   }
 
@@ -102,7 +102,7 @@ class SMSService {
   }
 
   async sendLowBatteryAlert(phone: string, boxId: string, batteryLevel: number): Promise<boolean> {
-    const message = `Alert: Your Smart P.O Box ${boxId} has low battery (${batteryLevel}%). Please contact support.`;
+    const message = `Alert: Your Last Smart Mile box ${boxId} has low battery (${batteryLevel}%). Please contact support.`;
     return this.sendSMS(phone, message);
   }
 
