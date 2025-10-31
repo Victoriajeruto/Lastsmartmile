@@ -66,12 +66,29 @@ export default function BoxManagement() {
       let errorMessage = "Failed to register box";
       
       if (error.message) {
-        if (error.message.includes("already exists")) {
-          errorMessage = "A box with this ID already exists. Please use a different Box ID.";
-        } else if (error.message.includes("validation") || error.message.includes("invalid")) {
-          errorMessage = "Please check your input. Make sure all required fields are filled correctly.";
-        } else {
-          errorMessage = error.message;
+        // Parse the error message which comes in format "400: {json}"
+        try {
+          const errorText = error.message.split(": ").slice(1).join(": ");
+          const errorData = JSON.parse(errorText);
+          
+          if (errorData.message) {
+            if (errorData.message.includes("already exists")) {
+              errorMessage = "A box with this ID already exists. Please use a different Box ID.";
+            } else if (errorData.message.includes("validation") || errorData.message.includes("invalid")) {
+              errorMessage = "Please check your input. Make sure all required fields are filled correctly.";
+            } else {
+              errorMessage = errorData.message;
+            }
+          }
+        } catch {
+          // If parsing fails, use the original error message
+          if (error.message.includes("already exists")) {
+            errorMessage = "A box with this ID already exists. Please use a different Box ID.";
+          } else if (error.message.includes("validation") || error.message.includes("invalid")) {
+            errorMessage = "Please check your input. Make sure all required fields are filled correctly.";
+          } else {
+            errorMessage = error.message;
+          }
         }
       }
       
