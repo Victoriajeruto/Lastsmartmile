@@ -173,7 +173,7 @@ export default function Register() {
                 <Package className="text-3xl" />
               </div>
               <div className="text-left">
-                <h1 className="font-bold text-2xl tracking-tight">Last Smart Mile</h1>
+                <h1 className="font-bold text-2xl tracking-tight">Last Link Box</h1>
                 <p className="text-sm opacity-90">Smart Postal Delivery System</p>
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function Register() {
               Create Account
             </h2>
             <p className="text-sm text-muted-foreground" data-testid="register-description">
-              Step {displayStep} of {totalSteps} - Join the Last Smart Mile system today
+              Step {displayStep} of {totalSteps} - Join the Last Link Box system today
             </p>
           </div>
 

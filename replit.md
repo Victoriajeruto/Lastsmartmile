@@ -1,6 +1,6 @@
 # Overview
 
-The **Last Smart Mile** is a smart parcel delivery system designed to automate and manage package deliveries using secure, automated lockboxes. It serves residents, couriers, and administrators, offering real-time tracking, secure box access via OTP/QR codes, comprehensive delivery management, and integrated payment processing for subscriptions. The project aims to revolutionize last-mile delivery by enhancing security, efficiency, and user experience.
+The **Last Link Box** is a smart parcel delivery system designed to automate and manage package deliveries using secure, automated lockboxes. It serves residents, couriers, and administrators, offering real-time tracking, secure box access via OTP/QR codes, comprehensive delivery management, and integrated payment processing for subscriptions. The project aims to revolutionize last-mile delivery by enhancing security, efficiency, and user experience.
 
 # User Preferences
 

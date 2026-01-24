@@ -50,7 +50,7 @@ class WebSocketService {
 
         ws.send(JSON.stringify({
           type: "connection",
-          message: "Connected to Last Smart Mile real-time notifications"
+          message: "Connected to Last Link Box real-time notifications"
         }));
       } catch (error) {
         ws.close(1008, "Invalid token");

@@ -92,7 +92,7 @@ export default function Login() {
                 <Package className="text-3xl" />
               </div>
               <div className="text-left">
-                <h1 className="font-bold text-2xl tracking-tight">Last Smart Mile</h1>
+                <h1 className="font-bold text-2xl tracking-tight">Last Link Box</h1>
                 <p className="text-sm opacity-90">Smart Postal Delivery System</p>
               </div>
             </div>
@@ -119,7 +119,7 @@ export default function Login() {
               Welcome Back
             </h2>
             <p className="text-sm text-muted-foreground" data-testid="login-description">
-              Sign in to access your Last Smart Mile dashboard
+              Sign in to access your Last Link Box dashboard
             </p>
           </div>
 
