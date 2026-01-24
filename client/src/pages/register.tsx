@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Package, Lock, Truck, Bell, Shield, Zap, CheckCircle2 } from "lucide-react";
+import { Lock, Truck, Bell, Shield, Zap, CheckCircle2 } from "lucide-react";
+import companyLogo from "@assets/Last_Link_Box_1769242505355.png";
 import LocationPicker from "@/components/LocationPicker";
 
 export default function Register() {
@@ -168,14 +169,14 @@ export default function Register() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
             {/* Logo and Brand - Centered */}
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl">
-                <Package className="text-3xl" />
-              </div>
-              <div className="text-left">
-                <h1 className="font-bold text-2xl tracking-tight">Last Link Box</h1>
-                <p className="text-sm opacity-90">Smart Postal Delivery System</p>
-              </div>
+            <div className="flex flex-col items-center justify-center mb-6">
+              <img 
+                src={companyLogo} 
+                alt="Last Link Box" 
+                className="w-32 h-32 object-contain drop-shadow-xl"
+                data-testid="img-company-logo"
+              />
+              <p className="text-sm opacity-90 mt-2">Smart Postal Delivery System</p>
             </div>
 
             {/* Main Heading - Centered */}
