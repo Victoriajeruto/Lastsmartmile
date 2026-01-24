@@ -169,14 +169,17 @@ export default function Register() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
             {/* Logo and Brand - Centered */}
-            <div className="flex flex-col items-center justify-center mb-6">
+            <div className="flex items-center justify-center gap-4 mb-6">
               <img 
                 src={companyLogo} 
                 alt="Last Link Box" 
-                className="w-32 h-32 object-contain drop-shadow-xl"
+                className="w-24 h-24 object-contain drop-shadow-xl"
                 data-testid="img-company-logo"
               />
-              <p className="text-sm opacity-90 mt-2">Smart Postal Delivery System</p>
+              <div className="text-left">
+                <h1 className="font-bold text-3xl tracking-tight">Last Link Box</h1>
+                <p className="text-sm opacity-90">Smart Postal Delivery System</p>
+              </div>
             </div>
 
             {/* Main Heading - Centered */}
