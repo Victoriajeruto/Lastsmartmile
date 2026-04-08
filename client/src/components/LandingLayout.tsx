@@ -28,7 +28,9 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
 
       {/* ── NAVBAR ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-14 flex items-center justify-between">
+
+        {/* Main bar: logo + desktop page links + auth buttons */}
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 h-14 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer group">
               <img src={companyLogo} alt="Last Link Box" className="w-8 h-8 object-contain" />
@@ -38,6 +40,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
             </div>
           </Link>
 
+          {/* Desktop page links */}
           <div className="hidden lg:flex items-center gap-1 text-sm font-medium">
             {pages.map((page) => (
               <Link key={page.path} href={page.path}>
@@ -67,10 +70,31 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
             </Link>
           </div>
         </div>
+
+        {/* Mobile page links — horizontally scrollable strip */}
+        <div className="lg:hidden border-t border-gray-100 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+          <div className="flex items-center gap-1 px-3 py-1.5 w-max">
+            {pages.map((page) => (
+              <Link key={page.path} href={page.path}>
+                <button
+                  className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    location === page.path
+                      ? "bg-primary text-white"
+                      : "text-gray-600 hover:text-primary hover:bg-gray-50"
+                  }`}
+                  data-testid={`mobile-nav-${page.label.toLowerCase().replace(/\s+/g, "-")}`}
+                >
+                  {page.label}
+                </button>
+              </Link>
+            ))}
+          </div>
+        </div>
       </nav>
 
       {/* ── PAGE CONTENT ── */}
-      <main className="flex-1 pt-14">
+      {/* On mobile: 56px main bar + ~36px scroll strip = ~92px offset */}
+      <main className="flex-1 pt-[92px] lg:pt-14">
         {children}
       </main>
 
