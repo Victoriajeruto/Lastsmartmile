@@ -1,6 +1,7 @@
 import { User } from "@/types";
 
-const API_BASE = "";
+const API_BASE =
+  "https://4a2b61ab-f707-46fa-a673-db795abcf2d3-00-xkqrleh7fjwi.picard.replit.dev";
 
 export interface LoginCredentials {
   username: string;
@@ -22,7 +23,6 @@ export interface AuthResponse {
   token: string;
   user: User;
 }
-
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE}/api/auth/login`, {
