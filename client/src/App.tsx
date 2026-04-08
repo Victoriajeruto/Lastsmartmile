@@ -8,6 +8,10 @@ import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
 import Landing from "@/pages/landing";
+import FeaturesPage from "@/pages/features-page";
+import HowItWorksPage from "@/pages/how-it-works-page";
+import BenefitsPage from "@/pages/benefits-page";
+import ContactPage from "@/pages/contact-page";
 import InstallationRequest from "@/pages/InstallationRequest";
 import NotFound from "@/pages/not-found";
 
@@ -35,6 +39,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/features" component={FeaturesPage} />
+      <Route path="/how-it-works" component={HowItWorksPage} />
+      <Route path="/benefits" component={BenefitsPage} />
+      <Route path="/contact" component={ContactPage} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/installation-request" component={InstallationRequest} />
