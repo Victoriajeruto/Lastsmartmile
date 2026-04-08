@@ -20,7 +20,7 @@ export default function Login() {
   });
 
   if (isAuthenticated) {
-    setLocation("/");
+    setLocation("/dashboard");
     return null;
   }
 
@@ -34,7 +34,7 @@ export default function Login() {
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       });
-      setLocation("/");
+      setLocation("/dashboard");
     } catch (error: any) {
       toast({
         title: "Login Failed",

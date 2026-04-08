@@ -40,7 +40,7 @@ export default function Register() {
   const displayStep = formData.role === "resident" ? currentStep : (currentStep === 4 ? 3 : currentStep);
 
   if (isAuthenticated) {
-    setLocation("/");
+    setLocation("/dashboard");
     return null;
   }
 
@@ -65,7 +65,7 @@ export default function Register() {
         title: "Account Created!",
         description: "Your account has been created successfully.",
       });
-      setLocation("/");
+      setLocation("/dashboard");
     } catch (error: any) {
       toast({
         title: "Registration Failed",

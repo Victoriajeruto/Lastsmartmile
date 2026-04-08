@@ -1,0 +1,52 @@
+Create a new **landing page** for this project.
+
+Design direction:
+
+* Make it **beautiful, premium, clean, and minimalistic**
+* Style inspiration: modern SaaS / polished presentation websites similar in feel to the references I shared
+* Keep the look **elegant, spacious, and refined**
+* Maintain the project’s **teal blue** as the primary brand color
+* Use a soft, modern palette built around:
+
+  * Teal blue as primary
+  * White / off-white backgrounds
+  * Light gray sections
+  * Subtle dark text for contrast
+* Avoid clutter, heavy shadows, or too many colors
+* The final look should feel **trustworthy, modern, and high-end**
+
+Layout requirements:
+
+* Create a proper **hero landing page**
+* Include:
+
+  * Strong headline
+  * Short compelling subheadline
+  * Clear call-to-action buttons
+  * Clean navigation bar
+  * Feature highlights / value proposition sections
+  * Optional illustration / abstract shapes / subtle modern visuals
+* Make the spacing generous and typography clean
+* Use rounded cards/buttons and smooth section flow
+* Ensure it is fully responsive on mobile and desktop
+
+Important functionality/layout instruction:
+
+* The **current page/content should not be deleted**
+* Move the **existing current page** so that it appears **under the Register / Log in button flow**
+* In other words:
+
+  * First show the new landing page
+  * Then place the current existing page/content below it or after the user proceeds via Register / Log in section, depending on the app structure
+* Keep all existing functionality intact
+
+UI details:
+
+* Navbar should look modern and minimal
+* Hero section should visually stand out but still remain clean
+* Buttons should use teal blue styling
+* Use subtle hover effects and polished transitions
+* Keep the design professional, not overly flashy
+
+Goal:
+I want the app to have a **premium first impression** with a **minimalistic teal-blue landing page**, while preserving the existing current page underneath the Register / Log in entry point.
