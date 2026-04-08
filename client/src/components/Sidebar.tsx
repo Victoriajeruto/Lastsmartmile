@@ -1,3 +1,4 @@
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Package, Home, Bell, Unlock, History, Settings, Truck, PackageOpen, MapPin, Clock, BarChart, Users, AlertTriangle, Cog } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +14,7 @@ interface SidebarProps {
 
 export default function Sidebar({ currentView, onViewChange, currentPage, onPageChange }: SidebarProps) {
   const { user, logout } = useAuth();
+  const [, setLocation] = useLocation();
 
   const residentNavItems = [
     { icon: Home, label: "Dashboard", page: "dashboard" as PageType },
@@ -106,6 +108,15 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-4">
           <div className="space-y-2">
+            {/* Home — always visible */}
+            <button
+              onClick={() => setLocation("/")}
+              className="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-200 hover:bg-sidebar-border text-sidebar-foreground hover:text-sidebar-foreground"
+              data-testid="nav-home"
+            >
+              <Home className="w-5 h-5" />
+              <span className="flex-1">Home</span>
+            </button>
             {getNavItems().map((item, index) => (
               <button
                 key={index}
