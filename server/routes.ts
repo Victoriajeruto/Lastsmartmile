@@ -1223,7 +1223,7 @@ export async function registerRoutes(app: Express) {
           channel: verifyResponse.data.channel,
           transactionDate: new Date(verifyResponse.data.paid_at),
         });
-
+        // vercel rebuild check
         // Update user's payment status
         await storage.updateUser(payment.userId, {
           hasCompletedPayment: true,
