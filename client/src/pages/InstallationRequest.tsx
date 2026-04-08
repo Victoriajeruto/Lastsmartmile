@@ -10,6 +10,7 @@ import { Package, MapPin, Calendar, CheckCircle2 } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import LandingLayout from "@/components/LandingLayout";
 
 export default function InstallationRequest() {
   const [, setLocation] = useLocation();
@@ -71,7 +72,8 @@ export default function InstallationRequest() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <LandingLayout>
+    <div className="bg-gradient-to-br from-background via-background to-muted/20">
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-12">
         <div className="container mx-auto px-4">
@@ -318,5 +320,6 @@ export default function InstallationRequest() {
         </div>
       </div>
     </div>
+    </LandingLayout>
   );
 }

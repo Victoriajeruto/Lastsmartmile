@@ -9,6 +9,7 @@ const pages = [
   { path: "/how-it-works", label: "How It Works" },
   { path: "/benefits", label: "Benefits" },
   { path: "/contact", label: "Contact" },
+  { path: "/installation-request", label: "Request Installation" },
 ];
 
 interface LandingLayoutProps {
