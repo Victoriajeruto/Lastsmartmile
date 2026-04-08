@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Home, Wrench, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import companyLogo from "@assets/Last_Link_Box_1769242505355.png";
 
 const pages = [
@@ -52,11 +52,6 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
                 </button>
               </Link>
             ))}
-            <Link href="/installation-request">
-              <button className="ml-2 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 flex items-center gap-1 transition-colors">
-                <Wrench className="w-3.5 h-3.5" /> Request Installation
-              </button>
-            </Link>
           </div>
 
           <div className="flex items-center gap-2">

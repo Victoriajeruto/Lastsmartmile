@@ -5,8 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Truck, Bell, Shield, Zap, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { Lock, Truck, Bell, Shield, Zap, CheckCircle2, Eye, EyeOff, Home, Star, HelpCircle, Gift, Mail, Wrench } from "lucide-react";
 import companyLogo from "@assets/Last_Link_Box_1769242505355.png";
+
+const navLinks = [
+  { href: "/", label: "Home", icon: Home },
+  { href: "/features", label: "Features", icon: Star },
+  { href: "/how-it-works", label: "How It Works", icon: HelpCircle },
+  { href: "/benefits", label: "Benefits", icon: Gift },
+  { href: "/contact", label: "Contact", icon: Mail },
+  { href: "/installation-request", label: "Request Box", icon: Wrench },
+];
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -78,6 +87,31 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Page Navigation Bar */}
+      <nav className="bg-white border-b border-gray-100 px-4 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link href="/">
+            <div className="flex items-center gap-2 cursor-pointer">
+              <img src={companyLogo} alt="Last Link Box" className="w-7 h-7 object-contain" />
+              <span className="font-bold text-sm text-gray-900 hidden sm:block">Last Link Box</span>
+            </div>
+          </Link>
+          <div className="flex items-center gap-0.5">
+            {navLinks.map(({ href, label, icon: Icon }) => (
+              <Link key={href} href={href}>
+                <button
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-colors"
+                  data-testid={`nav-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">{label}</span>
+                </button>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </nav>
+
       {/* Top Section - Hero Header with Teal Background */}
       <div className="bg-primary text-primary-foreground py-10 px-6 lg:py-12 lg:px-12 relative overflow-hidden">
         {/* Background Pattern */}
