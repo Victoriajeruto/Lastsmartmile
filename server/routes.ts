@@ -350,12 +350,10 @@ export async function registerRoutes(app: Express) {
 
         // Verify box is active (not deactivated/inactive)
         if (!box.isActive) {
-          return res
-            .status(400)
-            .json({
-              message:
-                "This box is currently inactive and cannot be used for deliveries",
-            });
+          return res.status(400).json({
+            message:
+              "This box is currently inactive and cannot be used for deliveries",
+          });
         }
 
         // Verify recipient exists
@@ -535,11 +533,9 @@ export async function registerRoutes(app: Express) {
           delivery: updatedDelivery,
         });
       } catch (error: any) {
-        res
-          .status(400)
-          .json({
-            message: error.message || "Failed to update delivery status",
-          });
+        res.status(400).json({
+          message: error.message || "Failed to update delivery status",
+        });
       }
     },
   );
@@ -882,11 +878,9 @@ export async function registerRoutes(app: Express) {
         const performance = await storage.getCourierPerformance(req.user!.id);
         res.json(performance);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to get performance metrics",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to get performance metrics",
+        });
       }
     },
   );
@@ -932,11 +926,9 @@ export async function registerRoutes(app: Express) {
 
         res.json(tamperStats);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to get tamper statistics",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to get tamper statistics",
+        });
       }
     },
   );
@@ -986,11 +978,9 @@ export async function registerRoutes(app: Express) {
 
         res.json(batteryStats);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to get battery statistics",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to get battery statistics",
+        });
       }
     },
   );
@@ -1203,11 +1193,9 @@ export async function registerRoutes(app: Express) {
         const payments = await storage.getPaymentsByUserId(req.user!.id);
         res.json({ payments });
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to fetch payment history",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to fetch payment history",
+        });
       }
     },
   );
@@ -1332,11 +1320,9 @@ export async function registerRoutes(app: Express) {
       // TODO: Send notification to admin about new installation request
       res.status(201).json(installationRequest);
     } catch (error: any) {
-      res
-        .status(400)
-        .json({
-          message: error.message || "Failed to create installation request",
-        });
+      res.status(400).json({
+        message: error.message || "Failed to create installation request",
+      });
     }
   });
 
@@ -1349,11 +1335,9 @@ export async function registerRoutes(app: Express) {
         const requests = await storage.getAllInstallationRequests();
         res.json(requests);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to fetch installation requests",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to fetch installation requests",
+        });
       }
     },
   );
@@ -1367,11 +1351,9 @@ export async function registerRoutes(app: Express) {
         const requests = await storage.getPendingInstallationRequests();
         res.json(requests);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to fetch pending requests",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to fetch pending requests",
+        });
       }
     },
   );
@@ -1397,11 +1379,9 @@ export async function registerRoutes(app: Express) {
 
         res.json(request);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to fetch installation request",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to fetch installation request",
+        });
       }
     },
   );
@@ -1424,11 +1404,9 @@ export async function registerRoutes(app: Express) {
 
         res.json(request);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to update installation request",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to update installation request",
+        });
       }
     },
   );
@@ -1454,11 +1432,9 @@ export async function registerRoutes(app: Express) {
         const pricing = await storage.getAllServicePricing();
         res.json(pricing);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to fetch all service pricing",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to fetch all service pricing",
+        });
       }
     },
   );
@@ -1473,11 +1449,9 @@ export async function registerRoutes(app: Express) {
         const pricing = await storage.createServicePricing(pricingData);
         res.status(201).json(pricing);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to create service pricing",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to create service pricing",
+        });
       }
     },
   );
@@ -1498,11 +1472,9 @@ export async function registerRoutes(app: Express) {
 
         res.json(pricing);
       } catch (error: any) {
-        res
-          .status(500)
-          .json({
-            message: error.message || "Failed to update service pricing",
-          });
+        res.status(500).json({
+          message: error.message || "Failed to update service pricing",
+        });
       }
     },
   );
@@ -1524,6 +1496,4 @@ export async function registerRoutes(app: Express) {
   );
 
   //websocketService.initialize(httpServer);
-
-  return;
 }
