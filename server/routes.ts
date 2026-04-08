@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   hashPassword, 
@@ -13,7 +12,7 @@ import { OTPService } from "./services/otpService";
 import { QRService } from "./services/qrService";
 import { NotificationService } from "./services/notificationService";
 import { paystackService } from "./services/paystackService";
-import { websocketService } from "./services/websocketService";
+// import { websocketService } from "./services/websocketService";
 import { optimizeRoute, calculateTotalDistance, estimateDeliveryTime } from "./services/routeOptimizationService";
 import { 
   insertUserSchema, 
@@ -25,7 +24,7 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express){
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -353,15 +352,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         box.boxId
       );
       
-      websocketService.sendToUser(recipient.id, {
-        type: "delivery_assigned",
-        data: delivery
-      });
+      //websocketService.sendToUser(recipient.id, {
+        //type: "delivery_assigned",
+        //data: delivery
+      //});
       
-      websocketService.sendToUser(req.user!.id, {
-        type: "delivery_created",
-        data: delivery
-      });
+      //websocketService.sendToUser(req.user!.id, {
+        //type: "delivery_created",
+        //data: delivery
+      //});
 
       res.status(201).json({
         message: "Delivery assigned successfully",
@@ -401,10 +400,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         delivery.boxId
       );
 
-      websocketService.sendToUser(delivery.recipientId, {
-        type: "delivery_assigned",
-        data: updatedDelivery
-      });
+      //websocketService.sendToUser(delivery.recipientId, {
+        //type: "delivery_assigned",
+        //data: updatedDelivery
+      //});
 
       res.json({
         message: "Delivery assigned successfully",
@@ -449,22 +448,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      websocketService.sendToUser(delivery.recipientId, {
-        type: "delivery_status_updated",
-        data: updatedDelivery
-      });
+      //websocketService.sendToUser(delivery.recipientId, {
+        //type: "delivery_status_updated",
+        //data: updatedDelivery
+      //});
       
       if (delivery.courierId) {
-        websocketService.sendToUser(delivery.courierId, {
-          type: "delivery_status_updated",
-          data: updatedDelivery
-        });
+        //websocketService.sendToUser(delivery.courierId, {
+          //type: "delivery_status_updated",
+          //data: updatedDelivery
+        //});
       }
       
-      websocketService.broadcastToRole("admin", {
-        type: "delivery_status_updated",
-        data: updatedDelivery
-      });
+      //websocketService.broadcastToRole("admin", {
+        //type: "delivery_status_updated",
+        //data: updatedDelivery
+      //});
 
       res.json({
         message: "Delivery status updated successfully",
@@ -638,25 +637,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (batteryLevel !== undefined && batteryLevel !== null && batteryLevel < 20 && box.ownerId) {
         await NotificationService.notifyLowBattery(box.ownerId, boxId, batteryLevel);
         
-        websocketService.sendToUser(box.ownerId, {
-          type: "battery_alert",
-          data: {
-            boxId,
-            batteryLevel,
-            status: updatedStatus,
-            message: `Low battery alert: ${batteryLevel}%`
-          }
-        });
+        //websocketService.sendToUser(box.ownerId, {
+          //type: "battery_alert",
+          //data: {
+            //boxId,
+            //batteryLevel,
+            //status: updatedStatus,
+            //message: `Low battery alert: ${batteryLevel}%`
+          //}
+        //});
         
-        websocketService.broadcastToRole("admin", {
-          type: "battery_alert",
-          data: {
-            boxId,
-            ownerId: box.ownerId,
-            batteryLevel,
-            status: updatedStatus
-          }
-        });
+        //websocketService.broadcastToRole("admin", {
+          //type: "battery_alert",
+          //data: {
+            //boxId,
+            //ownerId: box.ownerId,
+            //batteryLevel,
+            //status: updatedStatus
+          //}
+        //});
       }
 
       // Handle tamper alert
@@ -668,26 +667,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         await NotificationService.notifyTamperDetected(box.ownerId, boxId);
         
-        websocketService.sendToUser(box.ownerId, {
-          type: "tamper_alert",
-          data: {
-            boxId,
-            eventId: tamperEvent.id,
-            timestamp: new Date(),
-            message: "Tampering detected on your box"
-          }
-        });
+        //websocketService.sendToUser(box.ownerId, {
+          //type: "tamper_alert",
+          //data: {
+            //boxId,
+            //eventId: tamperEvent.id,
+            //timestamp: new Date(),
+            //message: "Tampering detected on your box"
+          //}
+        //});
         
-        websocketService.broadcastToRole("admin", {
-          type: "tamper_alert",
-          data: {
-            boxId,
-            ownerId: box.ownerId,
-            eventId: tamperEvent.id,
-            timestamp: new Date(),
-            status: updatedStatus
-          }
-        });
+        //websocketService.broadcastToRole("admin", {
+          //type: "tamper_alert",
+          //data: {
+            //boxId,
+            //ownerId: box.ownerId,
+            //eventId: tamperEvent.id,
+            //timestamp: new Date(),
+            //status: updatedStatus
+          //}
+        //});
       }
 
       console.log(`📦 IOT UPDATE - Box: ${boxId}`);
@@ -1225,9 +1224,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
+  const httpServer =;
   
-  websocketService.initialize(httpServer);
+  //websocketService.initialize(httpServer);
   
   return httpServer;
 }
