@@ -25,8 +25,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
   ];
 
   const courierNavItems = [
-    { icon: Home, label: "Dashboard", page: "active-deliveries" as PageType },
-    { icon: Truck, label: "Active Deliveries", page: "active-deliveries" as PageType, badge: "5" },
+    { icon: Truck, label: "Active Deliveries", page: "active-deliveries" as PageType },
     { icon: PackageOpen, label: "Assign Delivery", page: "assign-delivery" as PageType },
     { icon: MapPin, label: "Box Locations", page: "box-locations" as PageType },
     { icon: Clock, label: "Delivery History", page: "courier-delivery-history" as PageType },
