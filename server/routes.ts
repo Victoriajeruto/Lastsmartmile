@@ -1,4 +1,6 @@
 import type { Express } from "express";
+import fs from "fs";
+import path from "path";
 import { storage } from "./storage";
 import {
   hashPassword,
@@ -1496,4 +1498,35 @@ export async function registerRoutes(app: Express) {
   );
 
   //websocketService.initialize(httpServer);
+
+  // ── SPA fallback ──────────────────────────────────────────────────────────
+  // Serves index.html for any non-API, non-asset GET request so that
+  // hard-refreshing on a client-side route (e.g. /features) works correctly
+  // instead of returning a 404.
+  app.get("*", (req, res, next) => {
+    const p = req.path;
+    // Let the API, Vite internals, and static assets pass through
+    if (
+      p.startsWith("/api") ||
+      p.startsWith("/@") ||
+      p.startsWith("/src/") ||
+      p.includes(".")          // any file extension (js, css, png, …)
+    ) {
+      return next();
+    }
+
+    // Serve index.html — browser will then request JS/CSS from Vite normally
+    const indexPath = path.resolve(
+      path.dirname(new URL(import.meta.url).pathname),
+      "..",
+      "client",
+      "index.html",
+    );
+
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      next(); // fall through to Vite's own catch-all in dev
+    }
+  });
 }
