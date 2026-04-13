@@ -25,7 +25,7 @@ import {
   insertDeliverySchema,
   insertInstallationRequestSchema,
   type User,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { randomUUID } from "crypto";
 
 export async function registerRoutes(app: Express) {
