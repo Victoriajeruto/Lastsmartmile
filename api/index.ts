@@ -1,5 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "../server/routes";
+//import { registerRoutes } from "../server/routes";
 
 const app = express();
 
@@ -53,7 +53,7 @@ let routesRegistered = false;
 async function ensureRoutes() {
   if (!routesRegistered) {
     console.log("About to register routes");
-    await registerRoutes(app);
+    //await registerRoutes(app);
     console.log("Routes registered successfully");
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
