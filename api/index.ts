@@ -19,6 +19,10 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ ok: true, message: "Backend is working" });
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -48,7 +52,9 @@ let routesRegistered = false;
 
 async function ensureRoutes() {
   if (!routesRegistered) {
+    console.log("About to register routes");
     await registerRoutes(app);
+    console.log("Routes registered successfully");
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
@@ -61,6 +67,7 @@ async function ensureRoutes() {
 }
 
 export default async function handler(req: any, res: any) {
+  console.log("Handler invoked:", req.method, req.url);
   await ensureRoutes();
   return app(req, res);
 }
