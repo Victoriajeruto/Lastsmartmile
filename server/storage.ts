@@ -6,7 +6,7 @@ import {
   type Notification, type InsertNotification, type Payment, type InsertPayment,
   type TamperEvent, type InsertTamperEvent, type InstallationRequest, type InsertInstallationRequest,
   type ServicePricing, type InsertServicePricing
-} from "@shared/schema";
+} from "@shared/schema.js";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
