@@ -1,6 +1,6 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { Server } from "http";
-import { verifyToken } from "../auth";
+import { verifyToken } from "../auth.js";
 
 interface AuthenticatedWebSocket extends WebSocket {
   userId?: string;

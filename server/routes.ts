@@ -7,17 +7,17 @@ import {
   requireAuth,
   requireRole,
   type AuthenticatedRequest,
-} from "./auth";
-import { OTPService } from "./services/otpService";
-import { QRService } from "./services/qrService";
-import { NotificationService } from "./services/notificationService";
-import { paystackService } from "./services/paystackService";
-// import { websocketService } from "./services/websocketService";
+} from "./auth.js";
+import { OTPService } from "./services/otpService.js";
+import { QRService } from "./services/qrService.js";
+import { NotificationService } from "./services/notificationService.js";
+import { paystackService } from "./services/paystackService.js";
+// import { websocketService } from "./services/websocketService.js";
 import {
   optimizeRoute,
   calculateTotalDistance,
   estimateDeliveryTime,
-} from "./services/routeOptimizationService";
+} from "./services/routeOptimizationService.js";
 import {
   insertUserSchema,
   loginSchema,

@@ -1,6 +1,6 @@
-import { storage } from "../storage";
-import { smsService } from "./smsService";
-import { websocketService } from "./websocketService";
+import { storage } from "../storage.js";
+import { smsService } from "./smsService.js";
+import { websocketService } from "./websocketService.js";
 import { type InsertNotification } from "../../shared/schema.js";
 
 export class NotificationService {
