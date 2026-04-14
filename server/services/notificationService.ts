@@ -1,7 +1,7 @@
 import { storage } from "../storage";
 import { smsService } from "./smsService";
 import { websocketService } from "./websocketService";
-import { type InsertNotification } from "@shared/schema";
+import { type InsertNotification } from "../../shared/schema.js";
 
 export class NotificationService {
   static async createNotification(notification: InsertNotification): Promise<void> {

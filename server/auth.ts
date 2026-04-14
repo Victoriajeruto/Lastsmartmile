@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { type User } from "@shared/schema";
+import { type User } from "../shared/schema.js";
 import { storage } from "./storage";
 import type { Request, Response, NextFunction } from "express";
 

@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser } from "@shared/schema";
+import { users, type User, type InsertUser } from "../../shared/schema.js";
 
 export { users, User, InsertUser };
 
