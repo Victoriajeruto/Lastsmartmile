@@ -7,7 +7,7 @@ import {
   type TamperEvent, type InsertTamperEvent, type InstallationRequest, type InsertInstallationRequest,
   type ServicePricing, type InsertServicePricing
 } from "../shared/schema.js";
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, and, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
