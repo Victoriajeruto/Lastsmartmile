@@ -1,6 +1,6 @@
 import { User } from "@/types";
 
-const API_BASE = "https://lastsmartmile-gcxl.vercel.app";
+const API_BASE = "";
 
 export interface LoginCredentials {
   username: string;
