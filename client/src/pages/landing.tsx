@@ -52,13 +52,68 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent pointer-events-none rounded-2xl"></div>
             <div className="grid grid-cols-3 gap-3 lg:gap-5 relative z-10">
               {[
-                { icon: Package, label: "Parcel Delivered", sub: "KB-2341 · Just now", color: "text-primary" },
-                { icon: Lock, label: "Box Secured", sub: "OTP expires in 10 min", color: "text-emerald-500" },
-                { icon: Bell, label: "You're Notified", sub: "SMS + in-app alert sent", color: "text-amber-500" },
-              ].map(({ icon: Icon, label, sub, color }, i) => (
-                <div key={i} className="bg-white rounded-xl p-3 lg:p-4 shadow-sm border border-gray-100 flex flex-col gap-2">
-                  <div className={`w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center ${color}`}>
-                    <Icon className="w-4 h-4" />
+                {
+                  icon: Package,
+                  label: "Parcel Delivered",
+                  sub: "KB-2341 · Just now",
+                  color: "text-primary",
+                  bg: "bg-primary/10",
+                  dot: "bg-primary",
+                  floatDuration: "3.2s",
+                  floatDelay: "0s",
+                  pulseDuration: "2.6s",
+                  pulseDelay: "0s",
+                  enterDelay: "0s",
+                },
+                {
+                  icon: Lock,
+                  label: "Box Secured",
+                  sub: "OTP expires in 10 min",
+                  color: "text-emerald-500",
+                  bg: "bg-emerald-50",
+                  dot: "bg-emerald-400",
+                  floatDuration: "2.8s",
+                  floatDelay: "0.4s",
+                  pulseDuration: "2.2s",
+                  pulseDelay: "0.5s",
+                  enterDelay: "0.15s",
+                },
+                {
+                  icon: Bell,
+                  label: "You're Notified",
+                  sub: "SMS + in-app alert sent",
+                  color: "text-amber-500",
+                  bg: "bg-amber-50",
+                  dot: "bg-amber-400",
+                  floatDuration: "3.6s",
+                  floatDelay: "0.8s",
+                  pulseDuration: "3s",
+                  pulseDelay: "1s",
+                  enterDelay: "0.3s",
+                },
+              ].map(({ icon: Icon, label, sub, color, bg, dot, floatDuration, floatDelay, pulseDuration, pulseDelay, enterDelay }, i) => (
+                <div
+                  key={i}
+                  className="animate-fade-slide-up animate-float bg-white rounded-xl p-3 lg:p-4 shadow-md border border-gray-100 flex flex-col gap-2 hover:shadow-lg hover:-translate-y-1 transition-shadow duration-300 cursor-default"
+                  style={{
+                    animationDelay: enterDelay,
+                    ["--float-duration" as any]: floatDuration,
+                    ["--float-delay" as any]: floatDelay,
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center ${color}`}>
+                      <div
+                        className={`animate-icon-pulse`}
+                        style={{
+                          ["--pulse-duration" as any]: pulseDuration,
+                          ["--pulse-delay" as any]: pulseDelay,
+                        }}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <span className={`w-2 h-2 rounded-full ${dot} animate-pulse`}></span>
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-gray-900">{label}</p>
