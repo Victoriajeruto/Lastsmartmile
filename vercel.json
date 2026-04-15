@@ -1,20 +1,13 @@
 {
-  "routes": [
+  "version": 2,
+  "rewrites": [
     {
-      "src": "^/api/(.*)",
-      "dest": "/api/index.ts"
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
     },
     {
-      "src": "^/(.*\\.(js|css|png|jpg|jpeg|svg|ico|webp|gif|map))$",
-      "dest": "/dist/public/$1"
-    },
-    {
-      "src": "^/$",
-      "dest": "/dist/public/index.html"
-    },
-    {
-      "src": "^(?!/api).*$",
-      "dest": "/dist/public/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
