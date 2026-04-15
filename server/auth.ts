@@ -1,17 +1,22 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { type User } from "../shared/schema.js";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 import type { Request, Response, NextFunction } from "express";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || "fallback-secret-key";
+const JWT_SECRET =
+  process.env.JWT_SECRET || process.env.SESSION_SECRET || "fallback-secret-key";
 const SALT_ROUNDS = 10;
 
 // Security warning for production environments
 if (JWT_SECRET === "fallback-secret-key") {
   console.error("⚠️  SECURITY WARNING: Using fallback JWT secret key!");
-  console.error("   Please set JWT_SECRET or SESSION_SECRET environment variable.");
-  console.error("   This is a critical security risk in production environments.");
+  console.error(
+    "   Please set JWT_SECRET or SESSION_SECRET environment variable.",
+  );
+  console.error(
+    "   This is a critical security risk in production environments.",
+  );
 }
 
 export interface AuthenticatedRequest extends Request {
@@ -22,20 +27,23 @@ export const hashPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, SALT_ROUNDS);
 };
 
-export const verifyPassword = async (password: string, hash: string): Promise<boolean> => {
+export const verifyPassword = async (
+  password: string,
+  hash: string,
+): Promise<boolean> => {
   return await bcrypt.compare(password, hash);
 };
 
 export const generateToken = (user: User): string => {
   return jwt.sign(
-    { 
-      id: user.id, 
-      username: user.username, 
-      email: user.email, 
-      role: user.role 
+    {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
     },
     JWT_SECRET,
-    { expiresIn: "24h" }
+    { expiresIn: "24h" },
   );
 };
 
@@ -47,7 +55,11 @@ export const verifyToken = (token: string): any => {
   }
 };
 
-export const requireAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const requireAuth = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -56,7 +68,7 @@ export const requireAuth = async (req: AuthenticatedRequest, res: Response, next
 
     const token = authHeader.substring(7);
     const decoded = verifyToken(token);
-    
+
     if (!decoded) {
       return res.status(401).json({ message: "Invalid token" });
     }
