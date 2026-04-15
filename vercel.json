@@ -5,11 +5,15 @@
       "dest": "/api/index.ts"
     },
     {
-      "src": "^/(.*)",
+      "src": "^/(.*\\.(js|css|png|jpg|jpeg|svg|ico|webp|gif|map))$",
       "dest": "/dist/public/$1"
     },
     {
       "src": "^/$",
+      "dest": "/dist/public/index.html"
+    },
+    {
+      "src": "^(?!/api).*$",
       "dest": "/dist/public/index.html"
     }
   ]
