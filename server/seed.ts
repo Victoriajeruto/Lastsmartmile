@@ -20,6 +20,21 @@ export async function seedTestData() {
       });
       console.log("✓ Created test admin:", admin.username);
     }
+
+    const superAdminExists = await storage.getUserByUsername("super_admin");
+    if (!superAdminExists) {
+      const superAdminPassword = await hashPassword("SuperAdmin@2024!");
+      const superAdmin = await storage.createUser({
+        username: "super_admin",
+        email: "superadmin@lastlinkbox.co.ke",
+        password: superAdminPassword,
+        firstName: "Super",
+        lastName: "Admin",
+        role: "admin",
+        phone: "+254700000000"
+      });
+      console.log("✓ Created super admin:", superAdmin.username);
+    }
     
     const residentExists = await storage.getUserByUsername("test_resident");
     let residentId;
