@@ -2,6 +2,36 @@ import { User } from "@/types";
 
 const API_BASE = "";
 
+/** Safely parse a JSON response; throw with fallback message if not JSON */
+async function safeJsonParse<T>(response: Response, fallback: string): Promise<T> {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(fallback);
+  }
+  try {
+    return await response.json();
+  } catch {
+    throw new Error(fallback);
+  }
+}
+
+/** Extract an error message from any response (JSON or plain text) */
+async function extractErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const body = await response.json();
+      return body.message || fallback;
+    }
+    const text = await response.text();
+    // Strip HTML tags if the response is an HTML page
+    const stripped = text.replace(/<[^>]*>/g, "").trim();
+    return stripped.slice(0, 200) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export interface LoginCredentials {
   username: string;
   password: string;
@@ -33,11 +63,10 @@ export const authApi = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Login failed");
+      throw new Error(await extractErrorMessage(response, "Login failed"));
     }
 
-    return response.json();
+    return safeJsonParse(response, "Login failed");
   },
 
   async register(userData: RegisterData): Promise<AuthResponse> {
@@ -50,11 +79,10 @@ export const authApi = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Registration failed");
+      throw new Error(await extractErrorMessage(response, "Registration failed"));
     }
 
-    return response.json();
+    return safeJsonParse(response, "Registration failed");
   },
 
   async getCurrentUser(): Promise<{ user: User }> {
@@ -70,11 +98,10 @@ export const authApi = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to get user");
+      throw new Error(await extractErrorMessage(response, "Failed to get user"));
     }
 
-    return response.json();
+    return safeJsonParse(response, "Failed to get user");
   },
 
   setToken(token: string): void {
