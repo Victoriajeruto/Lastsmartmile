@@ -1310,6 +1310,40 @@ export async function registerRoutes(app: Express) {
     },
   );
 
+  // Super admin - all payments
+  app.get(
+    "/api/payments/all",
+    requireAuth,
+    requireRole(["admin"]),
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const users = await storage.getAllUsers();
+        // Collect payments for all users
+        const allPayments: any[] = [];
+        for (const user of users) {
+          const payments = await storage.getPaymentsByUserId(user.id);
+          for (const p of payments) {
+            allPayments.push({
+              ...p,
+              userEmail: user.email,
+              userName: `${user.firstName} ${user.lastName}`,
+              userRole: user.role,
+            });
+          }
+        }
+        allPayments.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        res.json({ payments: allPayments });
+      } catch (error: any) {
+        res
+          .status(500)
+          .json({ message: error.message || "Failed to fetch all payments" });
+      }
+    },
+  );
+
   // Installation Request routes
   app.post("/api/installation-requests", async (req, res) => {
     try {

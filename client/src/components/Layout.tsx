@@ -5,6 +5,7 @@ import TopBar from "./TopBar";
 import ResidentDashboard from "./dashboards/ResidentDashboard";
 import CourierDashboard from "./dashboards/CourierDashboard";
 import AdminDashboard from "./dashboards/AdminDashboard";
+import SuperAdminDashboard from "./dashboards/SuperAdminDashboard";
 import UnlockBoxModal from "./modals/UnlockBoxModal";
 import PaymentGate from "./PaymentGate";
 
@@ -23,6 +24,11 @@ import ResidentNotifications from "./pages/resident/ResidentNotifications";
 import ResidentDeliveryHistory from "./pages/resident/ResidentDeliveryHistory";
 import ResidentSettings from "./pages/resident/ResidentSettings";
 
+import RevenueManagement from "./pages/superadmin/RevenueManagement";
+import InstallationsManager from "./pages/superadmin/InstallationsManager";
+import TamperEventsPage from "./pages/superadmin/TamperEventsPage";
+import PlatformSettings from "./pages/superadmin/PlatformSettings";
+
 export type PageType = 
   // Resident pages
   | "dashboard" 
@@ -40,11 +46,19 @@ export type PageType =
   | "user-management"
   | "delivery-tracking"
   | "alerts-issues"
-  | "system-settings";
+  | "system-settings"
+  // Super Admin pages
+  | "sa-overview"
+  | "sa-revenue"
+  | "sa-installations"
+  | "sa-tamper-events"
+  | "sa-platform-settings";
+
+type ViewType = "resident" | "courier" | "admin" | "super-admin";
 
 export default function Layout() {
   const { user } = useAuth();
-  const [currentView, setCurrentView] = useState<"resident" | "courier" | "admin">(user?.role || "resident");
+  const [currentView, setCurrentView] = useState<ViewType>(user?.role || "resident");
   const [currentPage, setCurrentPage] = useState<PageType>(
     currentView === "admin" ? "analytics" : 
     currentView === "courier" ? "active-deliveries" : 
@@ -52,10 +66,11 @@ export default function Layout() {
   );
   const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
 
-  const handleViewChange = (view: "resident" | "courier" | "admin") => {
+  const handleViewChange = (view: ViewType) => {
     setCurrentView(view);
-    // Reset to default page for the new view
-    if (view === "admin") {
+    if (view === "super-admin") {
+      setCurrentPage("sa-overview");
+    } else if (view === "admin") {
       setCurrentPage("analytics");
     } else if (view === "courier") {
       setCurrentPage("active-deliveries");
@@ -138,6 +153,24 @@ export default function Layout() {
       }
     }
 
+    // Super Admin pages
+    if (currentView === "super-admin") {
+      switch (currentPage) {
+        case "sa-overview":
+          return <SuperAdminDashboard />;
+        case "sa-revenue":
+          return <RevenueManagement />;
+        case "sa-installations":
+          return <InstallationsManager />;
+        case "sa-tamper-events":
+          return <TamperEventsPage />;
+        case "sa-platform-settings":
+          return <PlatformSettings />;
+        default:
+          return <SuperAdminDashboard />;
+      }
+    }
+
     return <ResidentDashboard onOpenUnlockModal={() => setIsUnlockModalOpen(true)} />;
   };
 
@@ -160,6 +193,12 @@ export default function Layout() {
       "delivery-tracking": "Delivery Tracking",
       "alerts-issues": "Alerts & Issues",
       "system-settings": "System Settings",
+      // Super Admin
+      "sa-overview": "Super Admin Overview",
+      "sa-revenue": "Revenue & Payments",
+      "sa-installations": "Installation Requests",
+      "sa-tamper-events": "Tamper Events",
+      "sa-platform-settings": "Platform Settings",
     };
     return titles[currentPage] || "Dashboard";
   };
@@ -183,6 +222,12 @@ export default function Layout() {
       "delivery-tracking": "Track all deliveries in real-time",
       "alerts-issues": "View and resolve system issues",
       "system-settings": "Configure system preferences",
+      // Super Admin
+      "sa-overview": "Platform-wide control panel",
+      "sa-revenue": "All transactions and revenue breakdown",
+      "sa-installations": "Manage hardware installation requests",
+      "sa-tamper-events": "Security alerts across all smart boxes",
+      "sa-platform-settings": "Service pricing and system configuration",
     };
     return subtitles[currentPage] || "Welcome back!";
   };

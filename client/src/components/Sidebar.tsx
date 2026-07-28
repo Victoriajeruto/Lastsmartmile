@@ -1,13 +1,15 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { Package, Home, Bell, Unlock, History, Settings, Truck, PackageOpen, MapPin, Clock, BarChart, Users, AlertTriangle, Cog } from "lucide-react";
+import { Package, Home, Bell, Unlock, History, Settings, Truck, PackageOpen, MapPin, Clock, BarChart, Users, AlertTriangle, Cog, Shield, DollarSign, Wrench, ShieldAlert } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { PageType } from "./Layout";
 
+type ViewType = "resident" | "courier" | "admin" | "super-admin";
+
 interface SidebarProps {
-  currentView: "resident" | "courier" | "admin";
-  onViewChange: (view: "resident" | "courier" | "admin") => void;
+  currentView: ViewType;
+  onViewChange: (view: ViewType) => void;
   currentPage: PageType;
   onPageChange: (page: PageType) => void;
 }
@@ -40,12 +42,22 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
     { icon: Cog, label: "System Settings", page: "system-settings" as PageType },
   ];
 
+  const superAdminNavItems = [
+    { icon: Shield, label: "Overview", page: "sa-overview" as PageType },
+    { icon: DollarSign, label: "Revenue & Payments", page: "sa-revenue" as PageType },
+    { icon: Wrench, label: "Installations", page: "sa-installations" as PageType },
+    { icon: ShieldAlert, label: "Tamper Events", page: "sa-tamper-events" as PageType },
+    { icon: Cog, label: "Platform Settings", page: "sa-platform-settings" as PageType },
+  ];
+
   const getNavItems = () => {
     switch (currentView) {
       case "courier":
         return courierNavItems;
       case "admin":
         return adminNavItems;
+      case "super-admin":
+        return superAdminNavItems;
       default:
         return residentNavItems;
     }
@@ -92,7 +104,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
         {/* Role Switcher (Demo) */}
         <div className="p-4 border-b border-sidebar-border bg-sidebar">
           <label className="text-xs font-semibold text-sidebar-foreground mb-2 block uppercase tracking-wider">View As:</label>
-          <Select value={currentView} onValueChange={onViewChange}>
+          <Select value={currentView} onValueChange={(v) => onViewChange(v as ViewType)}>
             <SelectTrigger className="w-full bg-sidebar-border border-sidebar-primary text-sidebar-foreground hover:border-sidebar-primary transition-colors" data-testid="role-switcher">
               <SelectValue />
             </SelectTrigger>
@@ -100,6 +112,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
               <SelectItem value="resident">Resident</SelectItem>
               <SelectItem value="courier">Courier</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="super-admin">⚡ Super Admin</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -116,7 +129,7 @@ export default function Sidebar({ currentView, onViewChange, currentPage, onPage
               <Home className="w-5 h-5" />
               <span className="flex-1">Home</span>
             </button>
-            {getNavItems().map((item, index) => (
+            {getNavItems().map((item: any, index) => (
               <button
                 key={index}
                 onClick={() => handleNavClick(item)}
